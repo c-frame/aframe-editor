@@ -8,6 +8,7 @@ import CameraToolbar from './viewport/CameraToolbar';
 import TransformToolbar from './viewport/TransformToolbar';
 import ViewportHUD from './viewport/ViewportHUD';
 import { injectCSS } from '../lib/utils';
+import Library from './Library';
 
 THREE.ImageUtils.crossOrigin = '';
 
@@ -185,6 +186,8 @@ export default class Main extends React.Component {
               visible={this.state.visible.attributes}
             />
           </div>
+
+          <Library />
         </div>
 
         <ModalHelp
