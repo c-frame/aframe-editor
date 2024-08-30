@@ -67,7 +67,10 @@ export const Shortcuts = {
 
     // n: new entity
     if (keyCode === 78) {
-      Events.emit('entitycreate', { element: 'a-entity', components: {} });
+      AFRAME.INSPECTOR.execute('entitycreate', {
+        element: 'a-entity',
+        components: {}
+      });
     }
 
     // backspace & delete: remove selected entity
@@ -125,6 +128,18 @@ export const Shortcuts = {
       (event.ctrlKey && os !== 'macos') ||
       (event.metaKey && os === 'macos')
     ) {
+      // ctrl+z: undo
+      // ctrl+shift+z: redo
+      if (event.keyCode === 90) {
+        event.preventDefault(); // Prevent browser specific hotkeys
+        event.stopPropagation();
+        if (event.shiftKey) {
+          AFRAME.INSPECTOR.redo();
+        } else {
+          AFRAME.INSPECTOR.undo();
+        }
+      }
+
       if (
         AFRAME.INSPECTOR.selectedEntity &&
         document.activeElement.tagName !== 'INPUT'

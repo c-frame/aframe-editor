@@ -13,6 +13,23 @@ export default class Mixin extends React.Component {
     this.state = { mixins: this.getMixinValue() };
   }
 
+  onEntityUpdate = (detail) => {
+    if (detail.entity !== this.props.entity) {
+      return;
+    }
+    if (detail.component === 'mixin') {
+      this.setState({ mixins: this.getMixinValue() });
+    }
+  };
+
+  componentDidMount() {
+    Events.on('entityupdate', this.onEntityUpdate);
+  }
+
+  componentWillUnmount() {
+    Events.off('entityupdate', this.onEntityUpdate);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.props.entity === prevProps.entity) {
       return;
@@ -48,12 +65,10 @@ export default class Mixin extends React.Component {
 
     this.setState({ mixins: value });
     const mixinStr = value.map((v) => v.value).join(' ');
-    entity.setAttribute('mixin', mixinStr);
 
-    Events.emit('entityupdate', {
+    AFRAME.INSPECTOR.execute('entityupdate', {
       component: 'mixin',
       entity: entity,
-      property: '',
       value: mixinStr
     });
   };

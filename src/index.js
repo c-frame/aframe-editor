@@ -3,10 +3,12 @@ import Events from './lib/Events';
 import { Viewport } from './lib/viewport';
 import { AssetsLoader } from './lib/assetsLoader';
 import { Shortcuts } from './lib/shortcuts';
+import { commandsByType } from './lib/commands';
 
 import Main from './components/Main';
 import { initCameras } from './lib/cameras';
-import { createEntity } from './lib/entity';
+import { Config } from './lib/config';
+import { History } from './lib/history';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter';
 
 import './style/index.styl';
@@ -14,7 +16,9 @@ import './style/index.styl';
 function Inspector() {
   this.assetsLoader = new AssetsLoader();
   this.exporters = { gltf: new GLTFExporter() };
-  this.history = require('./lib/history');
+  this.config = new Config();
+  this.history = new History();
+  this.historyWatcher = require('./lib/historyWatcher');
   this.isFirstOpen = true;
   this.modules = {};
   this.opened = false;
@@ -190,16 +194,27 @@ Inspector.prototype = {
       this.sceneHelpers.visible = this.inspectorActive;
     });
 
-    Events.on('entitycreate', (definition) => {
-      createEntity(definition, (entity) => {
-        this.selectEntity(entity);
-      });
-    });
-
     document.addEventListener('child-detached', (event) => {
       const entity = event.detail.el;
       AFRAME.INSPECTOR.removeObject(entity.object3D);
     });
+  },
+
+  execute(cmdName, payload, optionalName) {
+    const Cmd = commandsByType.get(cmdName);
+    if (!Cmd) {
+      console.error(`Command ${cmdName} not found`);
+      return;
+    }
+    return this.history.execute(new Cmd(this, payload), optionalName);
+  },
+
+  undo: function () {
+    this.history.undo();
+  },
+
+  redo: function () {
+    this.history.redo();
   },
 
   selectById: function (id) {

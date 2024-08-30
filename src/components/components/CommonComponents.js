@@ -14,12 +14,14 @@ import copy from 'clipboard-copy';
 import { saveBlob } from '../../lib/utils';
 import GLTFIcon from '../../../assets/gltf.svg';
 
-// @todo Take this out and use updateEntity?
 function changeId(componentName, value) {
   var entity = AFRAME.INSPECTOR.selectedEntity;
   if (entity.id !== value) {
-    entity.id = value;
-    Events.emit('entityidchange', entity);
+    AFRAME.INSPECTOR.execute('entityupdate', {
+      component: 'id',
+      entity: entity,
+      value
+    });
   }
 }
 
@@ -34,6 +36,8 @@ export default class CommonComponents extends React.Component {
     }
     if (
       DEFAULT_COMPONENTS.indexOf(detail.component) !== -1 ||
+      detail.component === 'id' ||
+      detail.component === 'class' ||
       detail.component === 'mixin'
     ) {
       this.forceUpdate();
