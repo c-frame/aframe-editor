@@ -72,7 +72,7 @@ export class EntityUpdateCommand extends Command {
   }
 
   execute() {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       if (this.editor.config.debugUndoRedo) {
         console.log(
@@ -91,7 +91,7 @@ export class EntityUpdateCommand extends Command {
   }
 
   undo() {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       if (this.editor.selectedEntity && this.editor.selectedEntity !== entity) {
         // If the selected entity is not the entity we are undoing, select the entity.

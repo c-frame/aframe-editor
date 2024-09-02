@@ -17,7 +17,9 @@ export class EntityCloneCommand extends Command {
   }
 
   execute() {
-    const entityToClone = document.getElementById(this.entityIdToClone);
+    const entityToClone = document.querySelector(
+      `#${this.entityIdToClone}:not(a-mixin)`
+    );
     if (entityToClone) {
       const clone = cloneEntityImpl(entityToClone, this.entityId);
       this.entityId = clone.id;
@@ -26,11 +28,14 @@ export class EntityCloneCommand extends Command {
   }
 
   undo() {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.parentNode.removeChild(entity);
       Events.emit('entityremoved', entity);
-      this.editor.selectEntity(document.getElementById(this.entityIdToClone));
+      const entityToClone = document.querySelector(
+        `#${this.entityIdToClone}:not(a-mixin)`
+      );
+      this.editor.selectEntity(entityToClone);
     }
   }
 }

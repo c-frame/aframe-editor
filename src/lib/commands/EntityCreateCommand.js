@@ -31,7 +31,7 @@ export class EntityCreateCommand extends Command {
   }
 
   undo() {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.parentNode.removeChild(entity);
       Events.emit('entityremoved', entity);

@@ -20,7 +20,7 @@ export class ComponentAddCommand extends Command {
   }
 
   execute() {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.setAttribute(this.component, this.value);
       Events.emit('componentadd', {
@@ -32,7 +32,7 @@ export class ComponentAddCommand extends Command {
   }
 
   undo() {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.removeAttribute(this.component);
       Events.emit('componentremove', {
