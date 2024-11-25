@@ -9,6 +9,7 @@ import SceneGraph from './scenegraph/SceneGraph';
 import CameraToolbar from './viewport/CameraToolbar';
 import TransformToolbar from './viewport/TransformToolbar';
 import ViewportHUD from './viewport/ViewportHUD';
+import UndoRedo from './viewport/UndoRedo';
 
 THREE.ImageUtils.crossOrigin = '';
 
@@ -172,7 +173,10 @@ export default class Main extends React.Component {
           />
 
           <div id="viewportBar">
-            <CameraToolbar />
+            <div id="undoAndCameraToolbar">
+              <UndoRedo />
+              <CameraToolbar />
+            </div>
             <ViewportHUD />
             <TransformToolbar />
           </div>
