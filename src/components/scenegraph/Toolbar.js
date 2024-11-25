@@ -4,7 +4,7 @@ import {
   faPlus,
   faPause,
   faPlay,
-  faFloppyDisk,
+  // faFloppyDisk,
   faQuestion
 } from '@fortawesome/free-solid-svg-icons';
 import { AwesomeIcon } from '../AwesomeIcon';
@@ -82,17 +82,17 @@ export default class Toolbar extends React.Component {
   /**
    * Try to write changes with aframe-inspector-watcher.
    */
-  writeChanges = () => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:51234/save');
-    xhr.onerror = () => {
-      alert(
-        'aframe-watcher not running. This feature requires a companion service running locally. npm install aframe-watcher to save changes back to file. Read more at https://github.com/supermedium/aframe-watcher'
-      );
-    };
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(AFRAME.INSPECTOR.historyWatcher.updates));
-  };
+  // writeChanges = () => {
+  //   const xhr = new XMLHttpRequest();
+  //   xhr.open('POST', 'http://localhost:51234/save');
+  //   xhr.onerror = () => {
+  //     alert(
+  //       'aframe-watcher not running. This feature requires a companion service running locally. npm install aframe-watcher to save changes back to file. Read more at https://github.com/supermedium/aframe-watcher'
+  //     );
+  //   };
+  //   xhr.setRequestHeader('Content-Type', 'application/json');
+  //   xhr.send(JSON.stringify(AFRAME.INSPECTOR.historyWatcher.updates));
+  // };
 
   toggleScenePlaying = () => {
     if (this.state.isPlaying) {
@@ -112,7 +112,7 @@ export default class Toolbar extends React.Component {
   };
 
   render() {
-    const watcherTitle = 'Write changes with aframe-watcher.';
+    // const watcherTitle = 'Write changes with aframe-watcher.';
 
     return (
       <div id="toolbar">
@@ -143,13 +143,13 @@ export default class Toolbar extends React.Component {
           >
             <img src={GLTFIcon} />
           </a>
-          <a
+          {/* <a
             className="button"
             title={watcherTitle}
             onClick={this.writeChanges}
           >
             <AwesomeIcon icon={faFloppyDisk} />
-          </a>
+          </a> */}
           <a
             title="Copy a-scene HTML to clipboard"
             className="button"
