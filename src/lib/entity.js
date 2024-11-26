@@ -230,6 +230,14 @@ var componentsIncludedWithHandControls = new Set([
   'vive-focus-controls',
   'windows-motion-controls'
 ]);
+var componentsIncludedWithMovementControls = new Set([
+  'checkpoint-controls',
+  'gamepad-controls',
+  'keyboard-controls',
+  'nipple-controls',
+  'touch-controls',
+  'trackpad-controls'
+]);
 
 /**
  * Removes from copy those components or components' properties that comes from
@@ -318,6 +326,8 @@ function optimizeComponents(copy, source) {
       componentsToRemove = componentsIncludedWithLaserControls;
     } else if (name === 'hand-controls') {
       componentsToRemove = componentsIncludedWithHandControls;
+    } else if (name === 'movement-controls') {
+      componentsToRemove = componentsIncludedWithMovementControls;
     }
   });
 }
