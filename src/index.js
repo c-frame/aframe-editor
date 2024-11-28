@@ -18,7 +18,7 @@ function Inspector() {
   this.exporters = { gltf: new GLTFExporter() };
   this.config = new Config();
   this.history = new History();
-  this.historyWatcher = require('./lib/historyWatcher');
+  // this.historyWatcher = require('./lib/historyWatcher');
   this.isFirstOpen = true;
   this.modules = {};
   this.opened = false;
