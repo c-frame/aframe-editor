@@ -168,7 +168,14 @@ export function cloneSelectedEntity() {
  */
 export function getEntityClipboardRepresentation(entity) {
   var clone = prepareForSerialization(entity);
-  return clone.outerHTML;
+  var html = clone.outerHTML;
+  html = html.replaceAll('=""', '');
+  // Remove generated nanoid
+  html = html.replaceAll(/ id="[A-Za-z0-9_-]{21}"/g, '');
+  if (html.startsWith('<a-scene')) {
+    html = '    ' + html;
+  }
+  return html;
 }
 
 /**
@@ -188,7 +195,10 @@ export function prepareForSerialization(entity) {
       child.nodeType !== Node.ELEMENT_NODE ||
       (!child.hasAttribute('aframe-injected') &&
         !child.hasAttribute('data-aframe-inspector') &&
-        !child.hasAttribute('data-aframe-canvas'))
+        !child.hasAttribute('data-aframe-canvas') &&
+        !child.classList.contains('teleportRay') && // entity created by blink-controls
+        !child.classList.contains('hitEntity') && // entity created by blink-controls
+        !child.parentElement.hasAttribute('environment')) // children of the environment entity
     ) {
       clone.appendChild(prepareForSerialization(children[i]));
     }
@@ -196,6 +206,38 @@ export function prepareForSerialization(entity) {
   optimizeComponents(clone, entity);
   return clone;
 }
+
+var componentsIncludedWithLaserControls = new Set([
+  'hp-mixed-reality-controls',
+  'magicleap-controls',
+  'oculus-go-controls',
+  'meta-touch-controls',
+  'oculus-touch-controls',
+  'pico-controls',
+  'valve-index-controls',
+  'vive-controls',
+  'vive-focus-controls',
+  'windows-motion-controls',
+  'generic-tracked-controller-controls'
+]);
+var componentsIncludedWithHandControls = new Set([
+  'hp-mixed-reality-controls',
+  'magicleap-controls',
+  'meta-touch-controls',
+  'oculus-touch-controls',
+  'pico-controls',
+  'vive-controls',
+  'vive-focus-controls',
+  'windows-motion-controls'
+]);
+var componentsIncludedWithMovementControls = new Set([
+  'checkpoint-controls',
+  'gamepad-controls',
+  'keyboard-controls',
+  'nipple-controls',
+  'touch-controls',
+  'trackpad-controls'
+]);
 
 /**
  * Removes from copy those components or components' properties that comes from
@@ -208,16 +250,23 @@ function optimizeComponents(copy, source) {
   var removeAttribute = HTMLElement.prototype.removeAttribute;
   var setAttribute = HTMLElement.prototype.setAttribute;
   var components = source.components || {};
+  var componentsToRemove;
   Object.keys(components).forEach(function (name) {
+    if (componentsToRemove && componentsToRemove.has(name)) {
+      removeAttribute.call(copy, name);
+      return;
+    }
     var component = components[name];
     var result = getImplicitValue(component, source);
     var isInherited = result[1];
     var implicitValue = result[0];
     var currentValue = source.getAttribute(name);
+    var currentDOMValue = source.getDOMAttribute(name);
     var optimalUpdate = getOptimalUpdate(
       component,
       implicitValue,
-      currentValue
+      currentValue,
+      currentDOMValue
     );
     var doesNotNeedUpdate = optimalUpdate === null;
     if (isInherited && doesNotNeedUpdate) {
@@ -225,7 +274,21 @@ function optimizeComponents(copy, source) {
     } else {
       var schema = component.schema;
       var value = stringifyComponentValue(schema, optimalUpdate);
-      setAttribute.call(copy, name, value);
+      if (name === 'geometry' && !value.includes('primitive')) {
+        value = value === '' ? 'primitive: box' : 'primitive: box; ' + value;
+      }
+      if (name === 'light' && !value.includes('type')) {
+        value =
+          value === '' ? 'type: directional' : 'type: directional; ' + value;
+      }
+      if (
+        name !== 'environment' && // getOptimalUpdate is not aware of environment presets so it wrongly removes "fog: 0"
+        name !== 'laser-controls' && // keep the "hand: left" or "hand: right" as is
+        name !== 'hand-controls' && // keep the "hand: left" or "hand: right" as is
+        name !== 'debug' // keep debug="true" syntax unmodified
+      ) {
+        setAttribute.call(copy, name, value);
+      }
     }
 
     // Remove special components if they use the default value
@@ -237,6 +300,34 @@ function optimizeComponents(copy, source) {
         name === 'scale')
     ) {
       removeAttribute.call(copy, name);
+    }
+
+    if (copy.tagName === 'A-SCENE') {
+      if (name === 'fog' && document.querySelector('[environment]')) {
+        removeAttribute.call(copy, name);
+      }
+      if (name === 'keyboard-shortcuts' && value === '') {
+        removeAttribute.call(copy, name);
+      }
+      if (name === 'screenshot' && value === '') {
+        removeAttribute.call(copy, name);
+      }
+      if (name === 'vr-mode-ui' && value === '') {
+        removeAttribute.call(copy, name);
+      }
+      if (name === 'xr-mode-ui' && value === '') {
+        removeAttribute.call(copy, name);
+      }
+      if (name === 'device-orientation-permission-ui' && value === '') {
+        removeAttribute.call(copy, name);
+      }
+    }
+    if (name === 'laser-controls') {
+      componentsToRemove = componentsIncludedWithLaserControls;
+    } else if (name === 'hand-controls') {
+      componentsToRemove = componentsIncludedWithHandControls;
+    } else if (name === 'movement-controls') {
+      componentsToRemove = componentsIncludedWithMovementControls;
     }
   });
 }
@@ -460,10 +551,11 @@ function getDefaultValue(component, propertyName, source) {
  * @param {Component} component Component of the computed value.
  * @param {any}       implicit  The implicit value of the component.
  * @param {any}       reference The reference value for the component.
+ * @param {any}       currentDOMValue The current DOM value for the component returned by getDOMAttribute, used to keep the original order of properties.
  * @return                      the minimum value making the component to equal
  *                              the reference value.
  */
-function getOptimalUpdate(component, implicit, reference) {
+function getOptimalUpdate(component, implicit, reference, currentDOMValue) {
   if (equal(implicit, reference)) {
     return null;
   }
@@ -471,12 +563,35 @@ function getOptimalUpdate(component, implicit, reference) {
     return reference;
   }
   var optimal = {};
+  var keepKeysOrder = false;
+  var key;
+  // This is to keep the origin properties order
+  if (
+    currentDOMValue &&
+    typeof currentDOMValue === 'object' &&
+    !Array.isArray(currentDOMValue)
+  ) {
+    keepKeysOrder = true;
+    for (key in currentDOMValue) {
+      optimal[key] = undefined;
+    }
+  }
+
   Object.keys(reference).forEach(function (key) {
     var needsUpdate = !equal(reference[key], implicit[key]);
     if (needsUpdate) {
       optimal[key] = reference[key];
     }
   });
+
+  if (keepKeysOrder) {
+    for (key in optimal) {
+      if (optimal[key] === undefined) {
+        delete optimal[key];
+      }
+    }
+  }
+
   return optimal;
 }
 

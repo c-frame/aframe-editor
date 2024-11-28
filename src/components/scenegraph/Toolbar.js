@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  faClipboard,
   faPlus,
   faPause,
   faPlay,
@@ -7,7 +8,9 @@ import {
   faQuestion
 } from '@fortawesome/free-solid-svg-icons';
 import { AwesomeIcon } from '../AwesomeIcon';
+import { getEntityClipboardRepresentation } from '../../lib/entity';
 import Events from '../../lib/Events';
+import copy from 'clipboard-copy';
 import { saveBlob } from '../../lib/utils';
 import GLTFIcon from '../../../assets/gltf.svg';
 
@@ -47,7 +50,8 @@ export default class Toolbar extends React.Component {
     super(props);
 
     this.state = {
-      isPlaying: false
+      isPlaying: false,
+      copied: false
     };
   }
 
@@ -112,7 +116,7 @@ export default class Toolbar extends React.Component {
 
     return (
       <div id="toolbar">
-        <div className="toolbarActions">
+        <div className="toolbarActions" style={{ position: 'relative' }}>
           <a
             className="button"
             title="Add a new entity"
@@ -146,6 +150,41 @@ export default class Toolbar extends React.Component {
           >
             <AwesomeIcon icon={faFloppyDisk} />
           </a>
+          <a
+            title="Copy a-scene HTML to clipboard"
+            className="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              copy(
+                getEntityClipboardRepresentation(
+                  document.querySelector('a-scene')
+                )
+              );
+              this.setState({ copied: true });
+              setTimeout(() => {
+                this.setState({ copied: false });
+              }, 2000);
+            }}
+          >
+            <AwesomeIcon icon={faClipboard} />
+          </a>
+          <div
+            style={{
+              display: this.state.copied ? 'block' : 'none',
+              position: 'absolute',
+              left: '8px',
+              top: '35px',
+              zIndex: '100',
+              backgroundColor: '#242424',
+              color: '#fff',
+              width: '190px',
+              padding: '10px',
+              border: '1px solid #fff'
+            }}
+          >
+            Copied a-scene HTML to clipboard
+          </div>
           <div className="helpButtonContainer">
             <a className="button" title="Help" onClick={this.openHelpModal}>
               <AwesomeIcon icon={faQuestion} />
