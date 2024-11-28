@@ -56,6 +56,7 @@ export default class EntityRepresentation extends React.Component {
 
     // Name.
     let entityName = entity.id;
+    if (entityName.length === 21) entityName = ''; // don't show id if it's a nanoid
     let type = 'id';
     if (!entity.isScene && !entityName && entity.getAttribute('class')) {
       entityName = entity.getAttribute('class').split(' ')[0];

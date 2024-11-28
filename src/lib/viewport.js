@@ -73,14 +73,9 @@ export function Viewport(inspector) {
       value = `${object.scale.x} ${object.scale.y} ${object.scale.z}`;
     }
 
-    // We need to call setAttribute for component attrValue to be up to date,
-    // so that entity.flushToDOM() works correctly when duplicating an entity.
-    transformControls.object.el.setAttribute(component, value);
-
-    Events.emit('entityupdate', {
+    inspector.execute('entityupdate', {
       component: component,
       entity: transformControls.object.el,
-      property: '',
       value: value
     });
   });

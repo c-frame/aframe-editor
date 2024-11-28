@@ -70,7 +70,9 @@ export default class Toolbar extends React.Component {
   }
 
   addEntity() {
-    Events.emit('entitycreate', { element: 'a-entity', components: {} });
+    AFRAME.INSPECTOR.execute('entitycreate', {
+      components: {}
+    });
   }
 
   /**
@@ -85,7 +87,7 @@ export default class Toolbar extends React.Component {
       );
     };
     xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(AFRAME.INSPECTOR.history.updates));
+    xhr.send(JSON.stringify(AFRAME.INSPECTOR.historyWatcher.updates));
   };
 
   toggleScenePlaying = () => {

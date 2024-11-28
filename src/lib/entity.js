@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import Events from './Events';
 import { equal } from './utils';
 
@@ -47,14 +48,12 @@ export function removeEntity(entity, force) {
           '`?'
       )
     ) {
-      var closest = findClosestEntity(entity);
-      entity.parentNode.removeChild(entity);
-      AFRAME.INSPECTOR.selectEntity(closest);
+      AFRAME.INSPECTOR.execute('entityremove', entity);
     }
   }
 }
 
-function findClosestEntity(entity) {
+export function findClosestEntity(entity) {
   // First we try to find the after the entity
   var nextEntity = entity.nextElementSibling;
   while (nextEntity && (!nextEntity.isEntity || nextEntity.isInspector)) {
@@ -108,26 +107,49 @@ function insertAfter(newNode, referenceNode) {
 
 /**
  * Clone an entity, inserting it after the cloned one.
- * @param  {Element} entity Entity to clone
+ * @param {Element} entity Entity to clone
+ * @returns {Element} The clone
  */
 export function cloneEntity(entity) {
+  return AFRAME.INSPECTOR.execute('entityclone', entity);
+}
+
+/**
+ * Clone an entity, inserting it after the cloned one. This is the implementation of the entityclone command.
+ * @param {Element} entity Entity to clone
+ * @param {string|undefined} newId The new id to use for the clone
+ * @returns {Element} The clone
+ */
+export function cloneEntityImpl(entity, newId = undefined) {
   entity.flushToDOM();
 
   const clone = prepareForSerialization(entity);
   clone.addEventListener(
     'loaded',
     function () {
-      AFRAME.INSPECTOR.selectEntity(clone);
       Events.emit('entityclone', clone);
+      AFRAME.INSPECTOR.selectEntity(clone);
     },
     { once: true }
   );
 
-  // Get a valid unique ID for the entity
-  if (entity.id) {
-    clone.id = getUniqueId(entity.id);
+  if (newId) {
+    clone.id = newId;
+  } else {
+    if (entity.id) {
+      if (entity.id.length === 21) {
+        // nanoid generated id, create a new one
+        clone.id = createUniqueId();
+      } else {
+        // Get a valid unique ID for the entity
+        clone.id = getUniqueId(entity.id);
+      }
+    } else {
+      entity.id = createUniqueId();
+    }
   }
   insertAfter(clone, entity);
+  return clone;
 }
 
 /**
@@ -157,7 +179,7 @@ export function getEntityClipboardRepresentation(entity) {
  * @param {Element} entity Root of the DOM hierarchy.
  * @return {Element}        Copy of the DOM hierarchy ready for serialization.
  */
-function prepareForSerialization(entity) {
+export function prepareForSerialization(entity) {
   var clone = entity.cloneNode(false);
   var children = entity.childNodes;
   for (var i = 0, l = children.length; i < l; i++) {
@@ -491,6 +513,19 @@ function getUniqueId(baseId) {
   return baseId + '-' + i;
 }
 
+/**
+ * Create a unique id that can be used on a DOM element.
+ * @return {string} Valid Id
+ */
+export function createUniqueId() {
+  let id = nanoid();
+  do {
+    id = nanoid();
+    // be sure to not return an id starting with a number
+  } while (/^[-\d]/.test(id));
+  return id;
+}
+
 export function getComponentClipboardRepresentation(entity, componentName) {
   /**
    * Get the list of modified properties
@@ -524,25 +559,42 @@ export function getComponentClipboardRepresentation(entity, componentName) {
   return `${componentName}="${attributes}"`;
 }
 
+const NOT_COMPONENTS = ['id', 'class', 'mixin'];
+
 /**
  * Helper function to add a new entity with a list of components
  * @param  {object} definition Entity definition to add, only components is required:
  *   {element: 'a-entity', id: "hbiuSdYL2", class: "box", components: {geometry: 'primitive:box'}}
+ * @param  {function} cb Callback to call when the entity is created
+ * @param  {Element} parentEl Element to append the entity to
  * @return {Element} Entity created
  */
-export function createEntity(definition, cb) {
+export function createEntity(definition, cb, parentEl = undefined) {
   const entity = document.createElement(definition.element || 'a-entity');
   if (definition.id) {
     entity.id = definition.id;
+  } else {
+    entity.id = createUniqueId();
   }
 
-  if (definition.class) {
-    entity.setAttribute('class', definition.class);
+  // Set class, mixin
+  for (const attribute of NOT_COMPONENTS) {
+    if (attribute !== 'id' && definition[attribute]) {
+      entity.setAttribute(attribute, definition[attribute]);
+    }
   }
 
-  // load default attributes
-  for (let attr in definition.components) {
-    entity.setAttribute(attr, definition.components[attr]);
+  // Set data attributes
+  for (const key in definition) {
+    if (key.startsWith('data-')) {
+      entity.setAttribute(key, definition[key]);
+    }
+  }
+
+  // Set components
+  for (const componentName in definition.components) {
+    const componentValue = definition.components[componentName];
+    entity.setAttribute(componentName, componentValue);
   }
 
   // Ensure the components are loaded before update the UI
@@ -555,7 +607,13 @@ export function createEntity(definition, cb) {
     { once: true }
   );
 
-  AFRAME.scenes[0].appendChild(entity);
+  if (parentEl) {
+    parentEl.appendChild(entity);
+  } else {
+    document
+      .querySelector(AFRAME.INSPECTOR.config.defaultParent)
+      .appendChild(entity);
+  }
 
   return entity;
 }

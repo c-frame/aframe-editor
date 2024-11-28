@@ -12,7 +12,6 @@ import TextureWidget from '../widgets/TextureWidget';
 import Vec4Widget from '../widgets/Vec4Widget';
 import Vec3Widget from '../widgets/Vec3Widget';
 import Vec2Widget from '../widgets/Vec2Widget';
-import { updateEntity } from '../../lib/entity';
 
 export default class PropertyRow extends React.Component {
   static propTypes = {
@@ -57,12 +56,12 @@ export default class PropertyRow extends React.Component {
       isSingle: props.isSingle,
       name: props.name,
       onChange: function (name, value) {
-        updateEntity(
-          props.entity,
-          props.componentname,
-          !props.isSingle ? props.name : '',
-          value
-        );
+        AFRAME.INSPECTOR.execute('entityupdate', {
+          entity: props.entity,
+          component: props.componentname,
+          property: !props.isSingle ? props.name : '',
+          value: value
+        });
       },
       value: value
     };

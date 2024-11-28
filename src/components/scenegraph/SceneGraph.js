@@ -37,23 +37,28 @@ export default class SceneGraph extends React.Component {
   }
 
   onEntityUpdate = (detail) => {
-    if (detail.component === 'mixin' || detail.component === 'visible') {
+    if (
+      detail.component === 'id' ||
+      detail.component === 'class' ||
+      detail.component === 'mixin' ||
+      detail.component === 'visible'
+    ) {
       this.rebuildEntityOptions();
     }
   };
 
   componentDidMount() {
     this.rebuildEntityOptions();
-    Events.on('entityidchange', this.rebuildEntityOptions);
     Events.on('entitycreated', this.rebuildEntityOptions);
     Events.on('entityclone', this.rebuildEntityOptions);
+    Events.on('entityremoved', this.rebuildEntityOptions);
     Events.on('entityupdate', this.onEntityUpdate);
   }
 
   componentWillUnmount() {
-    Events.off('entityidchange', this.rebuildEntityOptions);
     Events.off('entitycreated', this.rebuildEntityOptions);
     Events.off('entityclone', this.rebuildEntityOptions);
+    Events.off('entityremoved', this.rebuildEntityOptions);
     Events.off('entityupdate', this.onEntityUpdate);
   }
 
