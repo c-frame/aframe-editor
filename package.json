@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --progress",
     "deploy": "npm run ghpages",
-    "dist": "npm run dist:max && npm run dist:min",
+    "dist": "npm run dist:min",
     "dist:max": "npm run build",
     "dist:min": "cross-env MINIFY=true npm run build",
     "ghpages": "npm run preghpages && ghpages -p gh-pages",

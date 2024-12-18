@@ -14,8 +14,8 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: process.env.MINIFY
-      ? 'aframe-inspector.min.js'
-      : 'aframe-inspector.js',
+      ? 'aframe-editor.min.js'
+      : 'aframe-inspector.js', // keep aframe-inspector.js for the examples
     publicPath: '/dist/'
   },
   externals: {
