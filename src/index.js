@@ -200,13 +200,13 @@ Inspector.prototype = {
     });
   },
 
-  execute(cmdName, payload, optionalName) {
+  execute(cmdName, payload, optionalName, callback = undefined) {
     const Cmd = commandsByType.get(cmdName);
     if (!Cmd) {
       console.error(`Command ${cmdName} not found`);
       return;
     }
-    return this.history.execute(new Cmd(this, payload), optionalName);
+    return this.history.execute(new Cmd(this, payload, callback), optionalName);
   },
 
   undo: function () {
