@@ -25,7 +25,7 @@ export class ComponentRemoveCommand extends Command {
       : structuredClone(entity.getDOMAttribute(payload.component));
   }
 
-  execute() {
+  execute(nextCommandCallback) {
     const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.removeAttribute(this.component);
@@ -33,10 +33,11 @@ export class ComponentRemoveCommand extends Command {
         entity,
         component: this.component
       });
+      nextCommandCallback?.(entity);
     }
   }
 
-  undo() {
+  undo(nextCommandCallback) {
     const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.setAttribute(this.component, this.value);
@@ -45,6 +46,7 @@ export class ComponentRemoveCommand extends Command {
         component: this.component,
         value: this.value
       });
+      nextCommandCallback?.(entity);
     }
   }
 }

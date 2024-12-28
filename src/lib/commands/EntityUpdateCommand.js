@@ -87,7 +87,7 @@ export class EntityUpdateCommand extends Command {
     }
   }
 
-  execute() {
+  execute(nextCommandCallback) {
     const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       if (this.editor.selectedEntity && this.editor.selectedEntity !== entity) {
@@ -108,10 +108,11 @@ export class EntityUpdateCommand extends Command {
       if (this.component === 'id') {
         this.entityId = this.newValue;
       }
+      nextCommandCallback?.(entity);
     }
   }
 
-  undo() {
+  undo(nextCommandCallback) {
     const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       if (this.editor.selectedEntity && this.editor.selectedEntity !== entity) {
@@ -131,6 +132,7 @@ export class EntityUpdateCommand extends Command {
       if (this.component === 'id') {
         this.entityId = this.oldValue;
       }
+      nextCommandCallback?.(entity);
     }
   }
 

@@ -16,18 +16,19 @@ export class EntityCloneCommand extends Command {
     this.entityId = null;
   }
 
-  execute() {
+  execute(nextCommandCallback) {
     const entityToClone = document.querySelector(
       `#${this.entityIdToClone}:not(a-mixin)`
     );
     if (entityToClone) {
       const clone = cloneEntityImpl(entityToClone, this.entityId);
       this.entityId = clone.id;
+      nextCommandCallback?.(clone);
       return clone;
     }
   }
 
-  undo() {
+  undo(nextCommandCallback) {
     const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (entity) {
       entity.parentNode.removeChild(entity);
@@ -36,6 +37,7 @@ export class EntityCloneCommand extends Command {
         `#${this.entityIdToClone}:not(a-mixin)`
       );
       this.editor.selectEntity(entityToClone);
+      nextCommandCallback?.(entity);
     }
   }
 }
