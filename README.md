@@ -89,6 +89,9 @@ on Windows and Ubuntu:
 - ctrl + z to undo an action
 - ctrl + shift + z to redo and action
 
+> [!NOTE]
+> If you want to use the editor api, see the available [commands](./docs/commands.md) you can execute and undo.
+
 ## About the copy a-scene HTML to clipboard feature
 
 ![aframe-editor-copy-to-clipboard](https://github.com/user-attachments/assets/f4ee426b-7bf4-470d-b40e-991b6b586572)
