@@ -22,17 +22,17 @@ Instead of using:
 <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 ```
 
-use an A-Frame master build like this one (Nov 25, 2024):
+use an A-Frame master build like this one (Jan 12, 2025):
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@3c884fef5a7ceaf093dbe962e78b4bb7ff4a7afe/dist/aframe-master.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@a0c3fe9737066d01fd065fb077ac7ea018d6ed91/dist/aframe-master.min.js"></script>
 ```
 
 To load the A-Frame editor instead of the A-Frame inspector, specify the url like this:
 
 ```html
 <a-scene
-  inspector="url: https://cdn.jsdelivr.net/gh/c-frame/aframe-editor@1.7.x/dist/aframe-editor.min.js">
+  inspector="url: https://cdn.jsdelivr.net/gh/c-frame/aframe-editor@1.7.2/dist/aframe-editor.min.js">
 ```
 
 > [!NOTE]
