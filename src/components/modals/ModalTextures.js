@@ -43,7 +43,6 @@ export default class ModalTextures extends React.Component {
     this.state = {
       filterText: '',
       isOpen: this.props.isOpen,
-      loadedTextures: [],
       assetsImages: [],
       registryImages: [],
       addNewDialogOpened: false,
@@ -290,7 +289,6 @@ export default class ModalTextures extends React.Component {
 
   render() {
     let isOpen = this.state.isOpen;
-    let loadedTextures = this.state.loadedTextures;
     let preview = this.state.preview;
 
     let validUrl = isValidId(this.state.preview.name);
@@ -357,6 +355,7 @@ export default class ModalTextures extends React.Component {
                 width="155px"
                 height="155px"
                 src={preview.src}
+                style={{ visibility: preview.src ? 'visible' : 'hidden' }}
               />
               {this.state.preview.loaded ? (
                 <div className="detail">
@@ -409,24 +408,6 @@ export default class ModalTextures extends React.Component {
                   );
                 }.bind(this)
               )}
-            {loadedTextures.map(function (texture) {
-              var image = texture.image;
-              let textureClick = this.selectTexture.bind(this, texture);
-              return (
-                <li key={texture.uuid} onClick={textureClick}>
-                  <img width="155px" height="155px" src={image.src} />
-                  <div className="detail">
-                    <span className="title">Name:</span>{' '}
-                    <span>{image.name}</span>
-                    <span className="title">Filename:</span>{' '}
-                    <span>{getFilename(image.src)}</span>
-                    <span>
-                      {image.width} x {image.height}
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
           </ul>
         </div>
       </Modal>
