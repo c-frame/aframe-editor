@@ -16,12 +16,9 @@ export default class ModalSponsor extends React.Component {
         onClose={this.props.onClose}
       >
         <div style={{ fontSize: '1.2em', maxWidth: '500px' }}>
-          <p>
-            The inspector is kept up to date by members of the community working
-            on the aframe editor, a modified version of the inspector with
-            additional features.
+          <p style={{ fontWeight: 'bold', textAlign: 'center' }}>
+            If you like the editor, please consider supporting the project.
           </p>
-
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <a
               href="https://github.com/c-frame/aframe-editor"
@@ -29,12 +26,9 @@ export default class ModalSponsor extends React.Component {
               rel="noreferrer"
               className="try-editor-btn"
             >
-              Give the aframe editor a try
+              Go to aframe editor repository and click Sponsor
             </a>
           </div>
-          <p style={{ fontWeight: 'bold', textAlign: 'center' }}>
-            If you like it, please consider supporting the project.
-          </p>
         </div>
       </Modal>
     );
