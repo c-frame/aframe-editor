@@ -32,7 +32,7 @@ To load the A-Frame editor instead of the A-Frame inspector, specify the url lik
 
 ```html
 <a-scene
-  inspector="url: https://cdn.jsdelivr.net/gh/c-frame/aframe-editor@1.7.3/dist/aframe-editor.min.js">
+  inspector="url: https://cdn.jsdelivr.net/gh/c-frame/aframe-editor@1.7.4/dist/aframe-editor.min.js">
 ```
 
 > [!NOTE]

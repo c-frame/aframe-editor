@@ -1,14 +1,11 @@
 {
   "name": "aframe-editor",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "A visual inspector tool for A-Frame.",
   "main": "dist/aframe-inspector.min.js",
   "scripts": {
-    "build": "webpack --progress",
     "deploy": "npm run ghpages",
-    "dist": "npm run dist:min",
-    "dist:max": "npm run build",
-    "dist:min": "cross-env MINIFY=true npm run build",
+    "dist": "cross-env MINIFY=true webpack --progress",
     "ghpages": "npm run preghpages && gh-pages -d gh-pages",
     "lint": "npm run lintfile src/",
     "lint:css": "stylelint src/css/main.css",
