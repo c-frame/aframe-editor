@@ -110,3 +110,15 @@ Compared to the A-Frame inspector where you actually already have that feature b
 
 > [!WARNING]
 > Please note that the feature can give wrong results for networked-aframe projects, so be sure to not blindly copy and paste the HTML code. Known issues are that you lose the inside of the template tags and you will have the instantiated networked entities instead of the original html code you had in your html page.
+
+## Config overrides
+
+The editor perspective camera position is kept in sync with the A-Frame
+active camera. This means you can move around the scene, toggle the inspector and you will be at the same position.
+If you want to disable that behavior, you can do that by defining a global variable like this:
+
+```html
+<script>
+  window.AFRAME_INSPECTOR_CONFIG = { copyCameraPosition: false };
+</script>
+```

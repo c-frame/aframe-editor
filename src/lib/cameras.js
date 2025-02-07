@@ -39,7 +39,8 @@ export function initCameras(inspector) {
   perspectiveCamera.far = 10000;
   perspectiveCamera.near = 0.01;
   perspectiveCamera.position.set(0, 1.6, 2);
-  perspectiveCamera.lookAt(new THREE.Vector3(0, 1.6, -1));
+  const center = new THREE.Vector3(0, 1.6, 0); // same as in viewport.js
+  perspectiveCamera.lookAt(center);
   perspectiveCamera.updateMatrixWorld();
   sceneEl.object3D.add(perspectiveCamera);
   sceneEl.camera = perspectiveCamera;
@@ -114,4 +115,26 @@ function setOrthoCamera(camera, dir, ratio) {
   camera.bottom = info.bottom || -10;
   camera.position.copy(info.position);
   camera.rotation.copy(info.rotation);
+}
+
+/**
+ * Copy position and rotation from source aframe camera to target camera.
+ * Also set center for EditorControls 2m in front of camera.
+ *
+ * @param {Object3D} sourceCamera
+ * @param {Camera} targetCamera
+ * @param {EditorControls} controls
+ */
+export function copyCameraPosition(sourceCamera, targetCamera, controls) {
+  sourceCamera.getWorldPosition(targetCamera.position);
+  sourceCamera.getWorldQuaternion(targetCamera.quaternion);
+  targetCamera.updateMatrixWorld();
+
+  // Set center for EditorControls 2m in front of camera.
+  const worldDirection = new THREE.Vector3();
+  targetCamera.getWorldDirection(worldDirection);
+  const center = targetCamera.position
+    .clone()
+    .addScaledVector(worldDirection, 2);
+  controls.center.copy(center);
 }

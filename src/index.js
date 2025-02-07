@@ -13,10 +13,10 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter';
 
 import './style/index.styl';
 
-function Inspector() {
+function Inspector(configOverrides) {
   this.assetsLoader = new AssetsLoader();
+  this.config = new Config(configOverrides);
   this.exporters = { gltf: new GLTFExporter() };
-  this.config = new Config();
   this.history = new History();
   // this.historyWatcher = require('./lib/historyWatcher');
   this.isFirstOpen = true;
@@ -316,4 +316,4 @@ Inspector.prototype = {
   }
 };
 
-AFRAME.INSPECTOR = new Inspector();
+AFRAME.INSPECTOR = new Inspector(window.AFRAME_INSPECTOR_CONFIG);
