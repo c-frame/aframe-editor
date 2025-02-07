@@ -1,5 +1,8 @@
 # A-Frame editor
 
+> [!NOTE]
+> If you want to see more features on an open source A-Frame editor, please consider sponsoring me! https://github.com/sponsors/vincentfretin
+
 The [A-Frame editor](https://github.com/c-frame/aframe-editor) is based on the
 [A-Frame inspector](https://github.com/aframevr/aframe-inspector) with additional features:
 
