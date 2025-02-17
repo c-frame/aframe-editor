@@ -259,26 +259,11 @@ function optimizeComponents(copy, source) {
     var doesNotNeedUpdate = optimalUpdate === null;
     if (isInherited && doesNotNeedUpdate) {
       removeAttribute.call(copy, name);
-    } else {
-      var schema = component.schema;
-      var value = stringifyComponentValue(schema, optimalUpdate);
-      if (name === 'geometry' && !value.includes('primitive')) {
-        value = value === '' ? 'primitive: box' : 'primitive: box; ' + value;
-      }
-      if (name === 'light' && !value.includes('type')) {
-        value =
-          value === '' ? 'type: directional' : 'type: directional; ' + value;
-      }
-      if (
-        name !== 'environment' && // getOptimalUpdate is not aware of environment presets so it wrongly removes "fog: 0"
-        name !== 'laser-controls' && // keep the "hand: left" or "hand: right" as is
-        name !== 'hand-controls' && // keep the "hand: left" or "hand: right" as is
-        name !== 'debug' // keep debug="true" syntax unmodified
-      ) {
-        setAttribute.call(copy, name, value);
-      }
+      return;
     }
 
+    var schema = component.schema;
+    var value = stringifyComponentValue(schema, optimalUpdate);
     // Remove special components if they use the default value
     if (
       value === '' &&
@@ -288,34 +273,59 @@ function optimizeComponents(copy, source) {
         name === 'scale')
     ) {
       removeAttribute.call(copy, name);
+      return;
+    }
+
+    if (name === 'geometry' && !value.includes('primitive')) {
+      value = value === '' ? 'primitive: box' : 'primitive: box; ' + value;
+    }
+    if (name === 'light' && !value.includes('type')) {
+      value =
+        value === '' ? 'type: directional' : 'type: directional; ' + value;
     }
 
     if (copy.tagName === 'A-SCENE') {
       if (name === 'fog' && document.querySelector('[environment]')) {
         removeAttribute.call(copy, name);
+        return;
       }
       if (name === 'keyboard-shortcuts' && value === '') {
         removeAttribute.call(copy, name);
+        return;
       }
       if (name === 'screenshot' && value === '') {
         removeAttribute.call(copy, name);
+        return;
       }
       if (name === 'vr-mode-ui' && value === '') {
         removeAttribute.call(copy, name);
+        return;
       }
       if (name === 'xr-mode-ui' && value === '') {
         removeAttribute.call(copy, name);
+        return;
       }
       if (name === 'device-orientation-permission-ui' && value === '') {
         removeAttribute.call(copy, name);
+        return;
       }
     }
+
     if (name === 'laser-controls') {
       componentsToRemove = componentsIncludedWithLaserControls;
     } else if (name === 'hand-controls') {
       componentsToRemove = componentsIncludedWithHandControls;
     } else if (name === 'movement-controls') {
       componentsToRemove = componentsIncludedWithMovementControls;
+    }
+
+    if (
+      name !== 'environment' && // getOptimalUpdate is not aware of environment presets so it wrongly removes "fog: 0"
+      name !== 'laser-controls' && // keep the "hand: left" or "hand: right" as is
+      name !== 'hand-controls' && // keep the "hand: left" or "hand: right" as is
+      name !== 'debug' // keep debug="true" syntax unmodified
+    ) {
+      setAttribute.call(copy, name, value);
     }
   });
 }
@@ -373,7 +383,7 @@ function getImplicitValue(component, source) {
     if (value !== undefined) {
       isInherited = true;
     } else {
-      value = getDefaultValue(component, null, source);
+      value = getDefaultValue(component, null);
     }
     if (value !== undefined) {
       // XXX: This assumes parse is idempotent
@@ -403,7 +413,7 @@ function getImplicitValue(component, source) {
       if (propertyValue !== undefined) {
         isInherited = isInherited || true;
       } else {
-        propertyValue = getDefaultValue(component, propertyName, source);
+        propertyValue = getDefaultValue(component, propertyName);
       }
       if (propertyValue !== undefined) {
         var parse = component.schema[propertyName].parse;
@@ -520,11 +530,10 @@ function getInjectedValue(component, propertyName, source) {
  * @param {Component} component      Component to be found.
  * @param {string}    [propertyName] If provided, component's property to be
  *                                   found.
- * @param {Element}   source         Element owning the component.
  * @return                           The component value coming from the schema
  *                                   default.
  */
-function getDefaultValue(component, propertyName, source) {
+function getDefaultValue(component, propertyName) {
   if (!propertyName) {
     return component.schema.default;
   }

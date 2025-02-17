@@ -143,7 +143,7 @@ export default class PropertyRow extends React.Component {
         <label htmlFor={this.id} className="text" title={title}>
           {props.name}
         </label>
-        {this.getWidget(props.schema.type)}
+        {this.getWidget()}
       </div>
     );
   }
