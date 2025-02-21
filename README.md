@@ -12,30 +12,21 @@ The [A-Frame editor](https://github.com/c-frame/aframe-editor) is based on the
 
 [See video](https://x.com/vincentfretin/status/1861726540196708776)
 
-The latest A-Frame editor version works with [A-Frame master](https://github.com/aframevr/aframe/commits/master/) greater than Nov 25, 2024, soon to be aframe 1.7.0.
-A-Frame 1.6.0 has known issues with the "copy a-scene HTML to clipboard" feature of the editor.
-
 ![aframe-editor](https://github.com/user-attachments/assets/e9970517-4864-4794-a5b4-323076d2fe07)
 
 ## How to use it?
 
-Instead of using:
+Use aframe 1.7.0 or later:
 
 ```html
-<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-```
-
-use an A-Frame master build like this one (Jan 23, 2025):
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@f67e6ecd06e64514a39f323b49f0a3522f6b2b82/dist/aframe-master.min.js"></script>
+<script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 ```
 
 To load the A-Frame editor instead of the A-Frame inspector, specify the url like this:
 
 ```html
 <a-scene
-  inspector="url: https://cdn.jsdelivr.net/gh/c-frame/aframe-editor@1.7.6/dist/aframe-editor.min.js">
+  inspector="url: https://cdn.jsdelivr.net/gh/c-frame/aframe-editor@1.7.7/dist/aframe-editor.min.js">
 ```
 
 > [!NOTE]
