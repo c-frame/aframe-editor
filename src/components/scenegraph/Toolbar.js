@@ -75,6 +75,7 @@ export default class Toolbar extends React.Component {
 
   addEntity() {
     AFRAME.INSPECTOR.execute('entitycreate', {
+      parentEl: AFRAME.INSPECTOR.selectedEntity,
       components: {}
     });
   }
