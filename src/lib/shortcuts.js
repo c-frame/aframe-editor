@@ -69,6 +69,7 @@ export const Shortcuts = {
     if (keyCode === 78) {
       AFRAME.INSPECTOR.execute('entitycreate', {
         element: 'a-entity',
+        parentEl: AFRAME.INSPECTOR.selectedEntity,
         components: {}
       });
     }
