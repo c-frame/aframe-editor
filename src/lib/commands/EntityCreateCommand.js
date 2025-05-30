@@ -36,9 +36,7 @@ export class EntityCreateCommand extends Command {
       }
     }
     if (!parentEl) {
-      parentEl =
-        AFRAME.INSPECTOR.selectedEntity ||
-        document.querySelector(this.editor.config.defaultParent);
+      parentEl = document.querySelector(this.editor.config.defaultParent);
     }
     // If we undo and redo, use the previous id so next redo actions (for example entityupdate to move the position) works correctly
     if (this.entityId) {
