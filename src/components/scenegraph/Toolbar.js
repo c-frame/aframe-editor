@@ -120,7 +120,7 @@ export default class Toolbar extends React.Component {
         <div className="toolbarActions" style={{ position: 'relative' }}>
           <a
             className="button"
-            title="Add a new entity"
+            title="Add new child entity to the selected entity"
             onClick={this.addEntity}
           >
             <AwesomeIcon icon={faPlus} />
