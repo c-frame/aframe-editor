@@ -37,7 +37,7 @@ export default class ModalHelp extends React.Component {
         { key: ['d'], description: 'Duplicate selected entity' },
         { key: ['f'], description: 'Focus on selected entity' },
         { key: ['g'], description: 'Toggle grid visibility' },
-        { key: ['n'], description: 'Add new entity' },
+        { key: ['n'], description: 'Add new child entity to the selected entity' },
         { key: ['o'], description: 'Toggle local between global transform' },
         { key: ['delete | backspace'], description: 'Delete selected entity' },
         { key: ['ctrl | cmd', 'z'], description: 'Undo action' },
