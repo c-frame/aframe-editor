@@ -17,10 +17,10 @@ The [A-Frame editor](https://github.com/c-frame/aframe-editor) is based on the
 
 ## How to use it?
 
-Use aframe 1.7.0 or later:
+Use aframe 1.7.1 or later:
 
 ```html
-<script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+<script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 ```
 
 To load the A-Frame editor instead of the A-Frame inspector, specify the url like this:
