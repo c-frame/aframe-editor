@@ -53,6 +53,7 @@ export class EntityCreateCommand extends Command {
     }
 
     const entity = createEntity(definition, callback, parentEl);
+    entity.pause();
     this.entityId = entity.id;
     return entity;
   }
