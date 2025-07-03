@@ -6,6 +6,7 @@ import PropertyRow from './PropertyRow';
 import Collapsible from '../Collapsible';
 import copy from 'clipboard-copy';
 import { getComponentClipboardRepresentation } from '../../lib/entity';
+import { shouldShowProperty } from '../../lib/utils';
 import Events from '../../lib/Events';
 
 const isSingleProperty = AFRAME.schema.isSingleProperty;
@@ -93,30 +94,7 @@ export default class Component extends React.Component {
 
     return Object.keys(componentData.schema)
       .sort()
-      .filter((propertyName) => {
-        if (!componentData.schema[propertyName].if) {
-          return true;
-        }
-        let showProperty = true;
-        for (const [conditionKey, conditionValue] of Object.entries(
-          componentData.schema[propertyName].if
-        )) {
-          if (Array.isArray(conditionValue)) {
-            if (
-              conditionValue.indexOf(componentData.data[conditionKey]) === -1
-            ) {
-              showProperty = false;
-              break;
-            }
-          } else {
-            if (conditionValue !== componentData.data[conditionKey]) {
-              showProperty = false;
-              break;
-            }
-          }
-        }
-        return showProperty;
-      })
+      .filter((propertyName) => shouldShowProperty(propertyName, componentData))
       .map((propertyName) => (
         <PropertyRow
           key={propertyName}
@@ -131,21 +109,13 @@ export default class Component extends React.Component {
   };
 
   render() {
-    let componentName = this.props.name;
-    let subComponentName = '';
-    if (componentName.indexOf('__') !== -1) {
-      subComponentName = componentName;
-      componentName = componentName.substr(0, componentName.indexOf('__'));
-    }
+    const componentName = this.props.name;
 
     return (
       <Collapsible collapsed={this.props.isCollapsed}>
         <div className="componentHeader collapsible-header">
-          <span
-            className="componentTitle"
-            title={subComponentName || componentName}
-          >
-            <span>{subComponentName || componentName}</span>
+          <span className="componentTitle" title={componentName}>
+            <span>{componentName}</span>
           </span>
           <div className="componentHeaderActions">
             <a
@@ -157,7 +127,7 @@ export default class Component extends React.Component {
                 copy(
                   getComponentClipboardRepresentation(
                     this.state.entity,
-                    (subComponentName || componentName).toLowerCase()
+                    componentName.toLowerCase()
                   )
                 );
               }}
