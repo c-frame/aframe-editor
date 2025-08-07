@@ -37,10 +37,13 @@ export default class PropertyRow extends React.Component {
 
   getWidget() {
     const props = this.props;
-    const isMap =
-      props.componentname === 'material' &&
-      (props.name === 'envMap' || props.name === 'src');
     let type = props.schema.type;
+
+    if (props.componentname === 'material' && props.name === 'envMap') {
+      // material envMap has the wrong type string, force it to map
+      type = 'map';
+    }
+
     if (
       (props.componentname === 'animation' ||
         props.componentname.startsWith('animation__')) &&
@@ -53,15 +56,17 @@ export default class PropertyRow extends React.Component {
       type = 'boolean';
     }
 
-    const value =
-      props.schema.type === 'selector'
+    let value =
+      type === 'selector'
         ? props.entity.getDOMAttribute(props.componentname)?.[props.name]
         : props.data;
 
+    if (type === 'string' && value && typeof value !== 'string') {
+      // Allow editing a custom type like event-set component schema
+      value = props.schema.stringify(value);
+    }
+
     const widgetProps = {
-      componentname: props.componentname,
-      entity: props.entity,
-      isSingle: props.isSingle,
       name: props.name,
       onChange: function (name, value) {
         AFRAME.INSPECTOR.execute('entityupdate', {
@@ -71,7 +76,8 @@ export default class PropertyRow extends React.Component {
           value: value
         });
       },
-      value: value
+      value: value,
+      id: this.id
     };
     const numberWidgetProps = {
       min: props.schema.hasOwnProperty('min') ? props.schema.min : -Infinity,
@@ -87,7 +93,7 @@ export default class PropertyRow extends React.Component {
         />
       );
     }
-    if (type === 'map' || isMap) {
+    if (type === 'map') {
       return <TextureWidget {...widgetProps} />;
     }
 
@@ -116,14 +122,6 @@ export default class PropertyRow extends React.Component {
         return <BooleanWidget {...widgetProps} />;
       }
       default: {
-        if (
-          props.schema.type === 'string' &&
-          widgetProps.value &&
-          typeof widgetProps.value !== 'string'
-        ) {
-          // Allow editing a custom type like event-set component schema
-          widgetProps.value = props.schema.stringify(widgetProps.value);
-        }
         return <InputWidget {...widgetProps} />;
       }
     }
