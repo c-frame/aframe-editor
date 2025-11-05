@@ -137,7 +137,7 @@ export default class CommonComponents extends React.Component {
               ID
             </label>
             <InputWidget
-              onChange={changeId}
+              onBlur={changeId}
               entity={entity}
               name="id"
               value={entity.id}
