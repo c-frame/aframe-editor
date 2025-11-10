@@ -1,6 +1,6 @@
 {
   "name": "aframe-editor",
-  "version": "1.7.15",
+  "version": "1.7.16",
   "description": "A visual inspector tool for A-Frame.",
   "main": "dist/aframe-inspector.min.js",
   "scripts": {
