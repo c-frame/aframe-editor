@@ -16,12 +16,28 @@
   align-items center
   gap 6px
 
-  a.button
+  &#undoRedoButtons
+    gap 0
+
+  .button
+    background-color inherit
+    border none
+    cursor pointer
+    padding 0
+    font-size 16px
+    line-height 1em
+
     & svg
       padding 8px
 
-    &:not(.active) svg:hover
+    &:not(.active):not([disabled]) svg:hover
       background-color var(--color-base-lighter)
+      color var(--color-primary)
+
+    &[disabled]
+      cursor default
+      & svg
+        color #666
 
   .active svg
     background-color var(--color-primary)
@@ -50,26 +66,6 @@
   margin-left 5px
   align-items center
   display flex
-
-#undoRedoButtons button
-  background-color inherit
-  border none
-  color #bcbcbc
-  font-size 16px
-  padding 6px
-
-  &:hover
-    background-color #444
-    color $primary
-    cursor: pointer
-
-  &[disabled]
-    color #666
-
-  &[disabled]:hover
-    background-color inherit
-    color #666
-    cursor default
 
 #cameraToolbar
   align-items center
