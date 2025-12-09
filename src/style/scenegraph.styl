@@ -1,25 +1,21 @@
 @import './lib';
 
 #toolbar
-  background-color $bg
+  background-color var(--color-base-200)
 
   .toolbarActions
-    padding 0 0 5px
+    padding 5px 10px
     display flex
     align-items baseline
+    justify-content space-between
 
     a.disabled
       color #666
       cursor default
 
-    .helpButtonContainer
-      flex-grow 1
-      padding-right 10px
-      text-align right
-
 #scenegraph
-  background $bg
-  border-top 1px solid #111
+  background var(--color-base-200)
+  border-top 1px solid var(--color-base-300)
   display flex
   flex-direction column
   overflow auto
@@ -27,24 +23,32 @@
   width 230px
 
   .entity
-    background $bg
+    background var(--color-base-200)
+    box-sizing border-box
     cursor pointer
     display flex
+    gap 6px
     justify-content space-between
+    align-items center
+    line-height 1em
     padding 3px
     width 100%
     white-space nowrap
 
     &:hover
-      background #1d2f39
+      background var(--color-accent-hover)
+      color var(--color-accent-content)
 
     &.active
-      background-color #155373
-      color #fff
-      .component:hover
-        color #1888c1
+      background-color var(--color-accent)
+      color var(--color-accent-content)
       .entityActions
-        display inline
+        align-items center
+        display flex
+        padding-right 2px
+
+        a.button:hover
+          color var(--color-primary)
 
     &.novisible
       &.active
@@ -52,7 +56,7 @@
         svg,
         .collapsespace,
         .id
-          color #999
+          color #626262
 
       &:not(.active)
         span,
@@ -62,60 +66,50 @@
           color #626262
 
   .component:hover
-    color #1faaf2
+    color var(--color-primary)
 
   .entityIcons
     margin-left 2px
 
   .entityActions
     display none
-    margin 0 14px
 
     .button
-      color #fff
+      color var(--color-base-content)
       font-size 12px
       margin-left 6px
 
-  svg
-    color #CCC
-
-  .toolbarActions svg:hover,
-  .entityActions svg:hover
-    color $primary
-
-  .active svg
-    color #FAFAFA
-
   .id
-    color #ccc
+    color var(--color-base-content)
 
   .option.active .id
-    color #fff
+    color var(--color-base-content)
 
   .collapsespace
-    color #eee
+    color var(--color-base-content)
     display inline-block
     text-align center
     width 14px
 
   .fa-eye
-    color #bbb
-
-  .icons a.button
-    color #fff
+    color var(--color-base-content)
 
   .search
     padding 5px
     font-size 16px
     position relative
+    display flex
 
     input
-      color $white
-      background $bgdark
-      border-radius 5px
-      height 22px
-      text-indent 10px
-      width 216px
+      color var(--color-primary)
+      background var(--color-base-300)
+      border-radius 0
+      box-sizing border-box
+      padding 5px 10px
+      width 100%
+
+    >svg
+      color var(--color-base-content)
 
     >svg, a.button
       position absolute
@@ -123,8 +117,8 @@
       top 10px
 
   .outliner
-    background $bg
-    color $white
+    background var(--color-base-200)
+    color var(--color-base-content)
     cursor default
     flex 1 1 auto
     font-size 13px
@@ -135,14 +129,31 @@
     padding 0
     width 230px
 
-.scenegraph-bottom
-  background-color #323232
-  border-top 1px solid #111
-  bottom 10
-  height 40px
-  left 0
-  z-index 100
+.theme-selector
+  position relative
 
-  a
-    float right
-    margin 10px
+  .theme-dropdown
+    background var(--color-base-300)
+    border 1px solid var(--color-base-300)
+    border-radius 4px
+    box-shadow 0 4px 12px rgba(0, 0, 0, 0.3)
+    max-height 300px
+    overflow-y auto
+    position absolute
+    right 0
+    top 100%
+    width 140px
+    z-index 10000
+
+    .theme-option
+      color var(--color-base-content)
+      cursor pointer
+      padding 8px 12px
+
+      &:hover
+        background var(--color-accent-hover)
+        color var(--color-accent-content)
+
+      &.selected
+        background var(--color-accent)
+        color var(--color-accent-content)

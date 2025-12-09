@@ -9,6 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { AwesomeIcon } from '../AwesomeIcon';
 import { getEntityClipboardRepresentation } from '../../lib/entity';
+import ThemeSelector from './ThemeSelector';
 import Events from '../../lib/Events';
 import copy from 'clipboard-copy';
 import { saveBlob } from '../../lib/utils';
@@ -138,11 +139,11 @@ export default class Toolbar extends React.Component {
             )}
           </a>
           <a
-            className="gltfIcon"
+            className="gltfIcon button"
             title="Export to GLTF"
             onClick={this.exportSceneToGLTF}
           >
-            <img src={GLTFIcon} />
+            <GLTFIcon />
           </a>
           {/* <a
             className="button"
@@ -186,11 +187,10 @@ export default class Toolbar extends React.Component {
           >
             Copied a-scene HTML to clipboard
           </div>
-          <div className="helpButtonContainer">
-            <a className="button" title="Help" onClick={this.openHelpModal}>
-              <AwesomeIcon icon={faQuestion} />
-            </a>
-          </div>
+          <ThemeSelector />
+          <a className="button" title="Help" onClick={this.openHelpModal}>
+            <AwesomeIcon icon={faQuestion} />
+          </a>
         </div>
       </div>
     );

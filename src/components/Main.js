@@ -12,8 +12,6 @@ import TransformToolbar from './viewport/TransformToolbar';
 import ViewportHUD from './viewport/ViewportHUD';
 import UndoRedo from './viewport/UndoRedo';
 
-THREE.ImageUtils.crossOrigin = '';
-
 export default class Main extends React.Component {
   constructor(props) {
     super(props);

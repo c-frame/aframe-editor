@@ -1,8 +1,8 @@
 @import './lib';
 
 .components
-  background-color $bg
-  color $white
+  background-color var(--color-base-200)
+  color var(--color-base-content)
   height 100%
   overflow auto
   position fixed
@@ -13,7 +13,7 @@
   display flex
   justify-content space-between
   .entityPrint
-    color #fff
+    color var(--color-base-content)
 
 .collapsible-content
   padding 5px 0
@@ -24,13 +24,18 @@
   text-overflow ellipsis
   text-transform uppercase
   white-space nowrap
-  color #fff
+  color var(--color-base-content)
   font-weight 600
   vertical-align bottom !important
 
+.componentHeaderActions
+  display flex
+  align-items center
+  gap 10px
+
 .collapsible .static
-  background $bglight
-  border-bottom 2px solid $bg
+  background var(--color-base-100)
+  border-bottom 2px solid var(--color-base-200)
   box-sizing content-box
   cursor pointer
   height 16px
@@ -38,26 +43,7 @@
   vertical-align bottom
   font-size 13px
   &:hover
-    background $bglighter
-/*
-.collapsible
-  &.collapsed
-    background-color $grayalt
-    .static,
-    .componentHeaderActions
-      color #dedede
-    &:hover
-      background-color $grayhover
-*/
-.collapsible .menu
-  text-align right
-
-.collapsible .menuafter
-  color #bbb
-  content '\2807'
-  font-size 12px
-  padding 5px
-  text-align right
+    background var(--color-base-lighter)
 
 .collapsible .static
   margin 0
@@ -71,11 +57,11 @@
   width 0
 
 .collapsible.collapsed .static .collapse-button
-  border-left-color $white
+  border-left-color var(--color-base-content)
   margin-top 4px
 
 .collapsible:not(.collapsed) .static .collapse-button
-  border-top-color $white
+  border-top-color var(--color-base-content)
   margin-top 7px
 
 .propertyRow
@@ -126,8 +112,8 @@
   input[type=number],
   input.string,
   input.number
-    background $bgdark
-    color #1faaf2
+    background var(--color-base-300)
+    color var(--color-primary)
     min-height 26px
     padding-bottom 1px
     padding-left 5px
@@ -145,23 +131,17 @@
   input.string:focus
     box-shadow none
 
+  .color-widget *
+    vertical-align middle
+
   .color_value
     margin 0 0 0 5px
     width 68px
     letter-spacing 1px
 
 .propertyRowDefined .text
-  color #FAFAFA
-  font-weight 500
-
-.components *
-  vertical-align middle
-
-span.subcomponent
-  color #999
-  float none !important
-  margin-left 10px
-  vertical-align top !important
+  color var(--color-property-defined)
+  font-weight 600
 
 #addComponentContainer
   align-items center
@@ -169,25 +149,26 @@ span.subcomponent
   flex-direction column
   justify-content center
   padding 20px 10px
-  background $bgdark
+  background var(--color-base-200)
+  border-top 1px solid var(--color-base-100)
 
   #addComponent
     text-align left
     width 200px
     .select__control
-      background #161616
+      background var(--color-base-300)
       height 35px
-      color $primary
+      color var(--color-primary)
 
   #addComponentHeader
     font-size 15px
-    margin 5px 0 10px 0
+    margin 0 0 10px 0
 
   input[type=text]:focus
     box-shadow none
 
 .Select-menu-outer .is-focused span
-  color #fff
+  color var(--color-base-content)
 
 .component-title
   align-items center
@@ -195,8 +176,10 @@ span.subcomponent
 
 #componentEntityHeader
   .collapsible-header
-    bottom 4px
+    bottom 5px
     position relative
+  a.button
+    margin-left 10px
   .collapse-button
     display none
   .static
@@ -206,9 +189,6 @@ span.subcomponent
     padding-left 5px
   .entityName
     max-width 160px
-    top 0
-  .entityIcons
-    color #FAFAFA
 
 #mixinSelect
   width 160px
@@ -218,6 +198,3 @@ span.subcomponent
   input
     margin-left 0
     width 120px
-
-#componentEntityHeader .gltfIcon img
-  top 0

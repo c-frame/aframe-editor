@@ -2,51 +2,42 @@
 
 #viewportBar
   align-items center
-  background-color $bg
-  color $white
+  background-color var(--color-base-200)
+  color var(--color-base-content)
   display flex
   flex-grow 2
   height 32px
   font-size 15px
   justify-content space-between
-  left 0
-  margin 0 auto
-  right 0
-  top 0
+  padding 0 5px
 
 .toolbarButtons
   display flex
   align-items center
   gap 6px
 
-  *
-    margin-left 0 !important
-    vertical-align middle
-
   a.button
     & svg
       padding 8px
 
     &:not(.active) svg:hover
-      background-color $grayhover
+      background-color var(--color-base-lighter)
 
   .active svg
-    background-color $primary
-    color #fff
+    background-color var(--color-primary)
+    color var(--color-primary-content)
 
   .active:hover svg
-    color #fff !important
+    color var(--color-primary-content) !important
 
 .local-transform
-  padding-left 10px
-  padding-right 20px
+  display flex
+  align-items center
+  gap 5px
+  padding 0 10px
 
 .local-transform label
-  color $lightgray
-  padding-left 5px
-
-.local-transform a.button
-  padding-top 0
+  color var(--color-base-content)
 
 #cameraSelect
   cursor pointer
@@ -81,17 +72,14 @@
     cursor default
 
 #cameraToolbar
-  margin-left 5px
   align-items center
   display flex
-  a
-    margin-right 10px
   .select__control
     background none
   .select__single-value
-    color $white
+    color var(--color-base-content)
     &:hover
-      color $primary
+      color var(--color-primary)
 
 #viewportHud
   display none
