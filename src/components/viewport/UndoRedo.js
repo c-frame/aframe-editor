@@ -30,8 +30,9 @@ const UndoRedo = () => {
   }, []);
 
   return (
-    <div id="undoRedoButtons">
+    <div id="undoRedoButtons" className="toolbarButtons">
       <button
+        className="button"
         type="button"
         onClick={handleUndoClick}
         disabled={undoDisabled}
@@ -40,6 +41,7 @@ const UndoRedo = () => {
         <AwesomeIcon icon={faRotateLeft} />
       </button>
       <button
+        className="button"
         type="button"
         onClick={handleRedoClick}
         disabled={redoDisabled}
