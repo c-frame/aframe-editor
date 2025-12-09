@@ -10,6 +10,7 @@ The [A-Frame editor](https://github.com/c-frame/aframe-editor) is based on the
 - The '+' button and `n` shortcut add a new child entity to the selected entity.
 - Better copy a-scene HTML to clipboard with a dedicated button. This replaces
   the aframe-watcher button.
+- And more... [see roadmap](https://github.com/orgs/c-frame/projects/3)
 
 [See video](https://x.com/vincentfretin/status/1861726540196708776)
 
