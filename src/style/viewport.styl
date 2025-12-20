@@ -6,14 +6,14 @@
   color var(--color-base-content)
   display flex
   flex-grow 2
-  height 32px
   font-size 15px
+  height 32px
   justify-content space-between
   padding 0 5px
 
 .toolbarButtons
-  display flex
   align-items center
+  display flex
   gap 6px
 
   &#undoRedoButtons
@@ -22,11 +22,11 @@
   .button
     background-color inherit
     border none
+    color var(--color-base-content)
     cursor pointer
-    padding 0
     font-size 16px
     line-height 1em
-    color var(--color-base-content)
+    padding 0
 
     & svg
       padding 8px
@@ -37,6 +37,7 @@
 
     &[disabled]
       cursor default
+
       & svg
         color #666
 
@@ -48,8 +49,8 @@
     color var(--color-primary-content) !important
 
 .local-transform
-  display flex
   align-items center
+  display flex
   gap 5px
   padding 0 10px
 
@@ -59,26 +60,31 @@
 #cameraSelect
   cursor pointer
   width 120px
+
   .select__dropdown-indicator
     padding-left 3px
     padding-right 3px
 
 #undoAndCameraToolbar
-  margin-left 5px
   align-items center
   display flex
+  margin-left 5px
 
 #cameraToolbar
   align-items center
   display flex
+
   .select__control
     background none
+
   .select__single-value
     color var(--color-base-content)
+
     &:hover
       color var(--color-primary)
 
 #viewportHud
   display none
-  +media--1024()
+
+  @media (min-width: 1025px)
     display block
