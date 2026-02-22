@@ -136,9 +136,7 @@ function recursivelyRegenerateId(element) {
 export function cloneEntityImpl(entity) {
   entity.flushToDOM();
   const clone = prepareForSerialization(entity);
-  if (clone !== null) {
-    recursivelyRegenerateId(clone);
-  }
+  recursivelyRegenerateId(clone);
   return clone;
 }
 
@@ -175,15 +173,9 @@ export function getEntityClipboardRepresentation(entity) {
  * primitive attributes, mixins and defaults.
  *
  * @param {Element} entity Root of the DOM hierarchy.
- * @param {Function} filterFunc Function to filter out nodes from the serialization
  * @return {Element}        Copy of the DOM hierarchy ready for serialization.
  */
-export function prepareForSerialization(
-  entity,
-  filterFunc = (entity) => !entity.classList.contains('autocreated')
-) {
-  if (!filterFunc(entity)) return null;
-
+export function prepareForSerialization(entity) {
   var clone = entity.cloneNode(false);
   var children = entity.childNodes;
   for (var i = 0, l = children.length; i < l; i++) {
@@ -197,10 +189,8 @@ export function prepareForSerialization(
         !child.classList.contains('hitEntity') && // entity created by blink-controls
         !child.parentElement.hasAttribute('environment')) // children of the environment entity
     ) {
-      const childClone = prepareForSerialization(children[i], filterFunc);
-      if (childClone !== null) {
-        clone.appendChild(childClone);
-      }
+      const childClone = prepareForSerialization(children[i]);
+      clone.appendChild(childClone);
     }
   }
   optimizeComponents(clone, entity);
@@ -829,9 +819,8 @@ export function elementToObject(element) {
  */
 export function exportEntityToObject(entity) {
   entity.flushToDOM();
-  // prepare entity for serialization and check if it's blacklisted
+  // prepare entity for serialization
   const preparedElement = prepareForSerialization(entity);
-  if (!preparedElement) return null;
   // convert entity to object
   const entityObj = elementToObject(preparedElement);
 
