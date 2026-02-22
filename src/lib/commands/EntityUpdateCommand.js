@@ -3,22 +3,35 @@ import { createUniqueId, updateEntity } from '../entity.js';
 
 /**
  * @param editor Editor
- * @param payload: entity, component, property, value.
+ * @param payload: entity (element or ID string), component, property, value.
  * @constructor
  */
 export class EntityUpdateCommand extends Command {
-  constructor(editor, payload) {
+  constructor(editor, payload = null) {
     super(editor);
 
     this.type = 'entityupdate';
     this.name = 'Update Entity';
     this.updatable = true;
 
-    const entity = payload.entity;
-    if (!entity.id) {
-      entity.id = createUniqueId();
+    if (payload === null) return;
+
+    // Handle case where entity is passed as ID string when used with multi command
+    let entity;
+    if (typeof payload.entity === 'string') {
+      entity = document.querySelector(`#${payload.entity}:not(a-mixin)`);
+      if (!entity) {
+        console.error('Entity not found with ID:', payload.entity);
+        return;
+      }
+      this.entityId = payload.entity;
+    } else {
+      entity = payload.entity;
+      if (!entity.id) {
+        entity.id = createUniqueId();
+      }
+      this.entityId = entity.id;
     }
-    this.entityId = entity.id;
     this.component = payload.component;
     this.property = payload.property ?? '';
 
@@ -36,12 +49,12 @@ export class EntityUpdateCommand extends Command {
             payload.value
           );
           this.oldValue = component.schema[payload.property].stringify(
-            payload.entity.getAttribute(payload.component)[payload.property]
+            entity.getAttribute(payload.component)[payload.property]
           );
         } else {
           // Just in case dynamic schema is not properly updated and we set an unknown property. I don't think this should happen.
           this.newValue = payload.value;
-          this.oldValue = payload.entity.getAttribute(payload.component)[
+          this.oldValue = entity.getAttribute(payload.component)[
             payload.property
           ];
         }
@@ -59,10 +72,8 @@ export class EntityUpdateCommand extends Command {
           ? component.schema.stringify(payload.value)
           : payload.value;
         this.oldValue = component.isSingleProperty
-          ? component.schema.stringify(
-              payload.entity.getAttribute(payload.component)
-            )
-          : structuredClone(payload.entity.getDOMAttribute(payload.component));
+          ? component.schema.stringify(entity.getAttribute(payload.component))
+          : structuredClone(entity.getDOMAttribute(payload.component));
         if (this.editor.config.debugUndoRedo) {
           console.log(
             'entityupdate component',
@@ -75,7 +86,7 @@ export class EntityUpdateCommand extends Command {
     } else {
       // id, class, mixin, data attributes
       this.newValue = payload.value;
-      this.oldValue = payload.entity.getAttribute(this.component);
+      this.oldValue = entity.getAttribute(this.component);
       if (this.editor.config.debugUndoRedo) {
         console.log(
           'entityupdate attribute',
@@ -141,5 +152,24 @@ export class EntityUpdateCommand extends Command {
       console.log('update', command);
     }
     this.newValue = command.newValue;
+  }
+
+  toJSON() {
+    const output = super.toJSON(this);
+    output.entityId = this.entityId;
+    output.component = this.component;
+    output.property = this.property;
+    output.oldValue = this.oldValue;
+    output.newValue = this.newValue;
+    return output;
+  }
+
+  fromJSON(json) {
+    super.fromJSON(json);
+    this.entityId = json.entityId;
+    this.component = json.component;
+    this.property = json.property;
+    this.oldValue = json.oldValue;
+    this.newValue = json.newValue;
   }
 }

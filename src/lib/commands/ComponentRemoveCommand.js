@@ -2,27 +2,47 @@ import Events from '../Events.js';
 import { Command } from '../command.js';
 import { createUniqueId } from '../entity.js';
 
+/**
+ * Command to remove a component from an entity
+ * @param editor Editor
+ * @param payload Object containing entity (element or ID string) and component
+ * @constructor
+ */
 export class ComponentRemoveCommand extends Command {
-  constructor(editor, payload) {
+  constructor(editor, payload = null) {
     super(editor);
 
     this.type = 'componentremove';
     this.name = 'Remove Component';
     this.updatable = false;
 
-    const entity = payload.entity;
-    if (!entity.id) {
-      entity.id = createUniqueId();
-    }
-    this.entityId = entity.id;
-    this.component = payload.component;
+    if (payload !== null) {
+      // Handle case where entity is passed as ID string when used with multi command
+      let entity;
+      if (typeof payload.entity === 'string') {
+        entity = document.querySelector(`#${payload.entity}:not(a-mixin)`);
+        if (!entity) {
+          console.error('Entity not found with ID:', payload.entity);
+          return;
+        }
+        this.entityId = payload.entity;
+      } else {
+        entity = payload.entity;
+        if (!entity.id) {
+          entity.id = createUniqueId();
+        }
+        this.entityId = entity.id;
+      }
 
-    const component =
-      entity.components[payload.component] ??
-      AFRAME.components[payload.component];
-    this.value = component.isSingleProperty
-      ? component.schema.stringify(entity.getAttribute(payload.component))
-      : structuredClone(entity.getDOMAttribute(payload.component));
+      this.component = payload.component;
+
+      const component =
+        entity.components[payload.component] ??
+        AFRAME.components[payload.component];
+      this.value = component.isSingleProperty
+        ? component.schema.stringify(entity.getAttribute(payload.component))
+        : structuredClone(entity.getDOMAttribute(payload.component));
+    }
   }
 
   execute(nextCommandCallback) {
@@ -48,5 +68,20 @@ export class ComponentRemoveCommand extends Command {
       });
       nextCommandCallback?.(entity);
     }
+  }
+
+  toJSON() {
+    const output = super.toJSON(this);
+    output.entityId = this.entityId;
+    output.component = this.component;
+    output.value = this.value;
+    return output;
+  }
+
+  fromJSON(json) {
+    super.fromJSON(json);
+    this.entityId = json.entityId;
+    this.component = json.component;
+    this.value = json.value;
   }
 }

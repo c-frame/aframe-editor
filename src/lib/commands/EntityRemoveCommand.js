@@ -2,18 +2,38 @@ import Events from '../Events';
 import { Command } from '../command.js';
 import { findClosestEntity, prepareForSerialization } from '../entity.js';
 
+/**
+ * Command to remove an entity from the scene
+ * @param editor Editor
+ * @param entity Entity element or ID string
+ * @constructor
+ */
 export class EntityRemoveCommand extends Command {
-  constructor(editor, entity) {
+  constructor(editor, entity = null) {
     super(editor);
 
     this.type = 'entityremove';
     this.name = 'Remove Entity';
     this.updatable = false;
 
-    this.entity = entity;
-    // Store the parent element and index for precise reinsertion
-    this.parentEl = entity.parentNode;
-    this.index = Array.from(this.parentEl.children).indexOf(entity);
+    if (entity !== null) {
+      // Handle case where entity is passed as ID string when used with multi command
+      if (typeof entity === 'string') {
+        this.entity = document.querySelector(`#${entity}:not(a-mixin)`);
+        if (!this.entity) {
+          console.error('Entity not found with ID:', entity);
+          return;
+        }
+        this.entityId = entity;
+      } else {
+        this.entity = entity;
+        this.entityId = entity.id;
+      }
+
+      // Store the parent element and index for precise reinsertion
+      this.parentEl = this.entity.parentNode;
+      this.index = Array.from(this.parentEl.children).indexOf(this.entity);
+    }
   }
 
   execute(nextCommandCallback) {
@@ -50,5 +70,21 @@ export class EntityRemoveCommand extends Command {
       },
       { once: true }
     );
+  }
+
+  toJSON() {
+    const output = super.toJSON(this);
+    output.entityId = this.entity.id;
+    output.parentId = this.parentEl.id;
+    output.index = this.index;
+    return output;
+  }
+
+  fromJSON(json) {
+    super.fromJSON(json);
+    this.entity = document.querySelector(`#${json.entityId}:not(a-mixin)`);
+    this.entityId = json.entityId;
+    this.parentEl = document.querySelector(`#${json.parentId}:not(a-mixin)`);
+    this.index = json.index;
   }
 }

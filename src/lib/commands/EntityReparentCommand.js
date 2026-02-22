@@ -83,10 +83,12 @@ export class EntityReparentCommand extends Command {
   }
 
   execute(nextCommandCallback) {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (!entity) return;
 
-    const newParent = document.getElementById(this.newParentEl);
+    const newParent = document.querySelector(
+      `#${this.newParentEl}:not(a-mixin)`
+    );
     if (!newParent) {
       console.error(`Parent element with id ${this.newParentEl} not found`);
       return;
@@ -135,14 +137,14 @@ export class EntityReparentCommand extends Command {
   }
 
   undo(nextCommandCallback) {
-    const entity = document.getElementById(this.entityId);
+    const entity = document.querySelector(`#${this.entityId}:not(a-mixin)`);
     if (!entity) return;
 
     let oldParent;
     if (this.oldParentEl === 'a-scene') {
       oldParent = document.querySelector('a-scene');
     } else if (this.oldParentEl) {
-      oldParent = document.getElementById(this.oldParentEl);
+      oldParent = document.querySelector(`#${this.oldParentEl}:not(a-mixin)`);
     }
     if (!oldParent) {
       console.error(
@@ -191,5 +193,32 @@ export class EntityReparentCommand extends Command {
     );
 
     return recreatedEntity;
+  }
+
+  toJSON() {
+    const output = super.toJSON(this);
+    output.entityId = this.entityId;
+    output.newParentEl = this.newParentEl;
+    output.newIndexInParent = this.newIndexInParent;
+    output.oldParentEl = this.oldParentEl;
+    output.oldIndexInParent = this.oldIndexInParent;
+    output.entityData = this.entityData;
+    output.worldPosition = this.worldPosition.toArray();
+    output.worldQuaternion = this.worldQuaternion.toArray();
+    return output;
+  }
+
+  fromJSON(json) {
+    super.fromJSON(json);
+    this.entityId = json.entityId;
+    this.newParentEl = json.newParentEl;
+    this.newIndexInParent = json.newIndexInParent;
+    this.oldParentEl = json.oldParentEl;
+    this.oldIndexInParent = json.oldIndexInParent;
+    this.entityData = json.entityData;
+    this.worldPosition = new THREE.Vector3().fromArray(json.worldPosition);
+    this.worldQuaternion = new THREE.Quaternion().fromArray(
+      json.worldQuaternion
+    );
   }
 }
