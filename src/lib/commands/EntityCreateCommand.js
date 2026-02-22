@@ -10,26 +10,28 @@ import { createEntity, createUniqueId } from '../entity.js';
  * @constructor
  */
 export class EntityCreateCommand extends Command {
-  constructor(editor, definition, callback = undefined) {
+  constructor(editor, definition = null, callback = undefined) {
     super(editor);
 
     this.type = 'entitycreate';
     this.name = 'Create Entity';
-    this.definition = definition;
     this.callback = callback;
-    this.entityId = null;
-    // If we have parentEl in the definition, be sure it has an id and store the definition with the id
-    if (
-      this.definition.parentEl &&
-      typeof this.definition.parentEl !== 'string'
-    ) {
-      if (!this.definition.parentEl.id) {
-        this.definition.parentEl.id = createUniqueId();
+    if (definition !== null) {
+      this.definition = definition;
+      this.entityId = definition.id ?? null;
+      // If we have parentEl in the definition, be sure it has an id and store the definition with the id
+      if (
+        this.definition.parentEl &&
+        typeof this.definition.parentEl !== 'string'
+      ) {
+        if (!this.definition.parentEl.id) {
+          this.definition.parentEl.id = createUniqueId();
+        }
+        this.definition = {
+          ...this.definition,
+          parentEl: this.definition.parentEl.id
+        };
       }
-      this.definition = {
-        ...this.definition,
-        parentEl: this.definition.parentEl.id
-      };
     }
   }
 
@@ -43,7 +45,9 @@ export class EntityCreateCommand extends Command {
     };
     let parentEl;
     if (this.definition.parentEl) {
-      parentEl = document.getElementById(this.definition.parentEl);
+      parentEl = document.querySelector(
+        `#${this.definition.parentEl}:not(a-mixin)`
+      );
     }
     if (!parentEl) {
       parentEl = document.querySelector(this.editor.config.defaultParent);
@@ -66,5 +70,18 @@ export class EntityCreateCommand extends Command {
       this.editor.selectEntity(null);
       nextCommandCallback?.(entity);
     }
+  }
+
+  toJSON() {
+    const output = super.toJSON(this);
+    output.definition = this.definition;
+    output.entityId = this.entityId;
+    return output;
+  }
+
+  fromJSON(json) {
+    super.fromJSON(json);
+    this.definition = json.definition;
+    this.entityId = json.entityId;
   }
 }

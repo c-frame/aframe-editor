@@ -1,3 +1,5 @@
+/* eslint-disable no-prototype-builtins, new-cap */
+import { commandsByType } from './commands';
 import Events from './Events';
 
 export class History {
@@ -40,6 +42,9 @@ export class History {
 
     cmd.name = optionalName !== undefined ? optionalName : cmd.name;
     cmd.execute();
+    cmd.inMemory = true;
+
+    cmd.json = cmd.toJSON(); // serialize the cmd immediately after execution and append the json to the cmd
 
     this.lastCmdTime = Date.now();
 
@@ -59,10 +64,15 @@ export class History {
 
     if (this.undos.length > 0) {
       cmd = this.undos.pop();
+
+      if (cmd.inMemory === false) {
+        cmd.fromJSON(cmd.json);
+      }
     }
 
     if (cmd !== undefined) {
       cmd.undo();
+      cmd.json = cmd.toJSON();
       this.redos.push(cmd);
       Events.emit('historychanged', cmd);
     }
@@ -80,15 +90,67 @@ export class History {
 
     if (this.redos.length > 0) {
       cmd = this.redos.pop();
+
+      if (cmd.inMemory === false) {
+        cmd.fromJSON(cmd.json);
+      }
     }
 
     if (cmd !== undefined) {
       cmd.execute();
+      cmd.json = cmd.toJSON();
       this.undos.push(cmd);
       Events.emit('historychanged', cmd);
     }
 
     return cmd;
+  }
+
+  toJSON() {
+    const history = {};
+    history.undos = [];
+    history.redos = [];
+
+    // Append Undos to History
+    for (let i = 0; i < this.undos.length; i++) {
+      if (this.undos[i].hasOwnProperty('json')) {
+        history.undos.push(this.undos[i].json);
+      }
+    }
+
+    // Append Redos to History
+    for (let i = 0; i < this.redos.length; i++) {
+      if (this.redos[i].hasOwnProperty('json')) {
+        history.redos.push(this.redos[i].json);
+      }
+    }
+
+    return history;
+  }
+
+  fromJSON(json) {
+    if (json === undefined) return;
+
+    for (let i = 0; i < json.undos.length; i++) {
+      const cmdJSON = json.undos[i];
+      const cmd = new commandsByType.get(cmdJSON.type)(this.editor); // creates a new object of type "json.type"
+      cmd.json = cmdJSON;
+      cmd.id = cmdJSON.id;
+      cmd.name = cmdJSON.name;
+      this.undos.push(cmd);
+    }
+
+    for (let i = 0; i < json.redos.length; i++) {
+      const cmdJSON = json.redos[i];
+      const cmd = new commandsByType.get[cmdJSON.type](this.editor); // creates a new object of type "json.type"
+      cmd.json = cmdJSON;
+      cmd.id = cmdJSON.id;
+      cmd.name = cmdJSON.name;
+      this.redos.push(cmd);
+    }
+
+    // Select the last executed undo-command
+    Events.emit('historychanged', this.undos[this.undos.length - 1]);
   }
 
   clear() {

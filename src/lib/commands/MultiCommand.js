@@ -9,21 +9,29 @@ import { commandsByType } from './index.js';
  * @constructor
  */
 export class MultiCommand extends Command {
-  constructor(editor, commands, callback = undefined) {
+  constructor(editor, jsonCommands = null, callback = undefined) {
     super(editor);
 
     this.type = 'multi';
     this.name = 'Multiple changes';
     this.updatable = false;
     this.callback = callback;
-    this.commands = commands
+    if (jsonCommands !== null) {
+      this.jsonCommands = jsonCommands;
+      this.commands = this.createCommands(jsonCommands);
+    }
+  }
+
+  createCommands(jsonCommands) {
+    return jsonCommands
       .map((cmdTuple) => {
         const Cmd = commandsByType.get(cmdTuple[0]);
         if (!Cmd) {
           console.error(`Command ${cmdTuple[0]} not found`);
           return null;
         }
-        return new Cmd(editor, cmdTuple[1], cmdTuple[2]);
+        const command = new Cmd(this.editor, cmdTuple[1], cmdTuple[2]);
+        return command;
       })
       .filter(Boolean);
   }
@@ -46,5 +54,16 @@ export class MultiCommand extends Command {
       };
     }, this.callback); // latest callback uses the entity as parameter
     return run();
+  }
+
+  toJSON() {
+    const output = super.toJSON(this);
+    output.commands = this.jsonCommands;
+    return output;
+  }
+
+  fromJSON(json) {
+    super.fromJSON(json);
+    this.commands = this.createCommands(json.commands);
   }
 }
