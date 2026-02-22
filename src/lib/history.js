@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins, new-cap */
 import { commandsByType } from './commands';
 import Events from './Events';
 
