@@ -352,7 +352,7 @@ function stringifyComponentValue(schema, data) {
   function _multi() {
     var propertyBag = {};
     Object.keys(data).forEach(function (name) {
-      if (schema[name]) {
+      if (schema[name] && data[name] !== undefined) {
         propertyBag[name] = schema[name].stringify(data[name]);
       }
     });
