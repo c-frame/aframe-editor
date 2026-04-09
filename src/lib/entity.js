@@ -810,6 +810,70 @@ export function elementToObject(element) {
 }
 
 /**
+ * Parse an entity HTML string (from clipboard) into a definition object
+ * compatible with the entitycreate command. Regenerates all IDs.
+ *
+ * @param {string} html Entity HTML string
+ * @returns {EntityObject|null} Entity definition or null if invalid
+ */
+export function parseEntityHTML(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const element = doc.body.firstElementChild;
+  if (!element) return null;
+
+  // Check if the root entity's ID already exists in the scene
+  const rootId = element.getAttribute('id');
+  const needsRegenerate = rootId ? !!document.getElementById(rootId) : true;
+
+  function parseElement(el) {
+    const def = {};
+
+    if (el.tagName !== 'A-ENTITY') {
+      def.element = el.tagName.toLowerCase();
+    }
+
+    const originalId = el.getAttribute('id');
+    if (needsRegenerate) {
+      // Regenerate ID using same logic as recursivelyRegenerateId
+      if (originalId) {
+        def.id =
+          originalId.length === 21 ? createUniqueId() : getUniqueId(originalId);
+      } else {
+        def.id = createUniqueId();
+      }
+    } else if (originalId) {
+      def.id = originalId;
+    }
+
+    const components = {};
+    for (const attr of el.attributes) {
+      if (attr.name === 'id') continue;
+      if (NOT_COMPONENTS.includes(attr.name) || attr.name.startsWith('data-')) {
+        def[attr.name] = attr.value;
+        continue;
+      }
+      components[attr.name] = attr.value;
+    }
+    if (Object.keys(components).length > 0) {
+      def.components = components;
+    }
+
+    const children = [];
+    for (const child of el.children) {
+      children.push(parseElement(child));
+    }
+    if (children.length > 0) {
+      def.children = children;
+    }
+
+    return def;
+  }
+
+  return parseElement(element);
+}
+
+/**
  * Converts an entity to a serializable object representation with blacklist filtering.
  * This function prepares an entity for export by applying serialization optimizations,
  * filtering out blacklisted properties, and adding parent relationship metadata.

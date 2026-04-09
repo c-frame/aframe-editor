@@ -8,6 +8,7 @@ The [A-Frame editor](https://github.com/c-frame/aframe-editor) is based on the
 
 - Undo/redo feature for all the actions you do in the editor.
 - The '+' button and `n` shortcut add a new child entity to the selected entity.
+- Copy entity HTML to clipboard and paste it in an other scene
 - Better copy a-scene HTML to clipboard with a dedicated button. This replaces
   the aframe-watcher button.
 - Reparent and reorder an entity
