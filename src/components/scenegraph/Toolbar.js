@@ -1,13 +1,17 @@
 import React from 'react';
 import {
   faPlus,
+  faPaste,
   faPause,
   faPlay,
   // faFloppyDisk,
   faQuestion
 } from '@fortawesome/free-solid-svg-icons';
 import { AwesomeIcon } from '../AwesomeIcon';
-import { getEntityClipboardRepresentation } from '../../lib/entity';
+import {
+  getEntityClipboardRepresentation,
+  parseEntityHTML
+} from '../../lib/entity';
 import CopyToClipboardButton from '../CopyToClipboardButton';
 import ThemeSelector from './ThemeSelector';
 import Events from '../../lib/Events';
@@ -79,6 +83,29 @@ export default class Toolbar extends React.Component {
     });
   }
 
+  pasteEntity = async () => {
+    try {
+      const html = await navigator.clipboard.readText();
+      if (!html.trim()) return;
+
+      const definition = parseEntityHTML(html);
+      if (!definition) return;
+
+      const selected = AFRAME.INSPECTOR.selectedEntity;
+      const defaultParent = AFRAME.INSPECTOR.config.defaultParent.replace(
+        /^#/,
+        ''
+      );
+      if (selected && selected.id !== defaultParent && selected.parentElement) {
+        definition.parentEl = selected.parentElement;
+      }
+
+      AFRAME.INSPECTOR.execute('entitycreate', definition);
+    } catch (error) {
+      console.error('Failed to paste entity from clipboard:', error);
+    }
+  };
+
   /**
    * Try to write changes with aframe-inspector-watcher.
    */
@@ -123,6 +150,13 @@ export default class Toolbar extends React.Component {
             onClick={this.addEntity}
           >
             <AwesomeIcon icon={faPlus} />
+          </a>
+          <a
+            className="button"
+            title="Paste entity from clipboard"
+            onClick={this.pasteEntity}
+          >
+            <AwesomeIcon icon={faPaste} />
           </a>
           <a
             id="playPauseScene"
