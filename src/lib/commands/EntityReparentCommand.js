@@ -37,11 +37,13 @@ export class EntityReparentCommand extends Command {
       // Store entity data for recreation
       this.entityData = exportEntityToObject(entity);
 
-      // Store world position and quaternion before reparenting
+      // Store world position, quaternion, and scale before reparenting
       this.worldPosition = new THREE.Vector3();
       this.worldQuaternion = new THREE.Quaternion();
+      this.worldScale = new THREE.Vector3();
       entity.object3D.getWorldPosition(this.worldPosition);
       entity.object3D.getWorldQuaternion(this.worldQuaternion);
+      entity.object3D.getWorldScale(this.worldScale);
     }
   }
 
@@ -60,9 +62,19 @@ export class EntityReparentCommand extends Command {
       .invert()
       .multiply(this.worldQuaternion);
 
+    // Calculate the new local scale
+    const parentWorldScale = new THREE.Vector3();
+    newParent.object3D.getWorldScale(parentWorldScale);
+    const newLocalScale = new THREE.Vector3(
+      this.worldScale.x / parentWorldScale.x,
+      this.worldScale.y / parentWorldScale.y,
+      this.worldScale.z / parentWorldScale.z
+    );
+
     // Apply the new local transform to the entity
     entity.object3D.position.copy(newLocalPosition);
     entity.object3D.quaternion.copy(newLocalQuaternion);
+    entity.object3D.scale.copy(newLocalScale);
 
     // Update A-Frame attributes to reflect the changes
     entity.setAttribute('position', {
@@ -79,6 +91,12 @@ export class EntityReparentCommand extends Command {
       x: THREE.MathUtils.radToDeg(euler.x),
       y: THREE.MathUtils.radToDeg(euler.y),
       z: THREE.MathUtils.radToDeg(euler.z)
+    });
+
+    entity.setAttribute('scale', {
+      x: newLocalScale.x,
+      y: newLocalScale.y,
+      z: newLocalScale.z
     });
   }
 
@@ -205,6 +223,7 @@ export class EntityReparentCommand extends Command {
     output.entityData = this.entityData;
     output.worldPosition = this.worldPosition.toArray();
     output.worldQuaternion = this.worldQuaternion.toArray();
+    output.worldScale = this.worldScale.toArray();
     return output;
   }
 
@@ -220,5 +239,6 @@ export class EntityReparentCommand extends Command {
     this.worldQuaternion = new THREE.Quaternion().fromArray(
       json.worldQuaternion
     );
+    this.worldScale = new THREE.Vector3().fromArray(json.worldScale);
   }
 }
