@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
 import { AwesomeIcon } from '../AwesomeIcon';
+import CopyToClipboardButton from '../CopyToClipboardButton';
 import BooleanWidget from '../widgets/BooleanWidget';
 import ColorWidget from '../widgets/ColorWidget';
 import InputWidget from '../widgets/InputWidget';
@@ -15,6 +16,9 @@ import Vec4Widget from '../widgets/Vec4Widget';
 import Vec3Widget from '../widgets/Vec3Widget';
 import Vec2Widget from '../widgets/Vec2Widget';
 import { equal } from '../../lib/utils';
+import { getComponentClipboardRepresentation } from '../../lib/entity';
+
+const COPYABLE_COMPONENTS = ['position', 'rotation', 'scale'];
 
 export default class PropertyRow extends React.Component {
   static propTypes = {
@@ -211,10 +215,28 @@ export default class PropertyRow extends React.Component {
           {props.name}
         </label>
         {this.getWidget()}
-        {isPropertyExplicitlySet && type !== 'map' && (
+        <div className="propertyRow-actions">
+          {type === 'vec3' &&
+            COPYABLE_COMPONENTS.includes(props.componentname) && (
+              <CopyToClipboardButton
+                title="Copy to clipboard"
+                message="Copied to clipboard"
+                text={() =>
+                  getComponentClipboardRepresentation(
+                    props.entity,
+                    props.componentname
+                  )
+                }
+              />
+            )}
           <button
             className="reset-button"
             title="Reset"
+            style={
+              !(isPropertyExplicitlySet && type !== 'map')
+                ? { visibility: 'hidden' }
+                : null
+            }
             onClick={() => {
               AFRAME.INSPECTOR.execute('entityupdate', {
                 entity: props.entity,
@@ -226,7 +248,7 @@ export default class PropertyRow extends React.Component {
           >
             <AwesomeIcon icon={faRotateLeft} />
           </button>
-        )}
+        </div>
       </div>
     );
   }
