@@ -87,17 +87,28 @@ export class EntityReparentCommand extends Command {
       newLocalQuaternion,
       'YXZ'
     );
-    entity.setAttribute('rotation', {
-      x: THREE.MathUtils.radToDeg(euler.x),
-      y: THREE.MathUtils.radToDeg(euler.y),
-      z: THREE.MathUtils.radToDeg(euler.z)
-    });
+    const rotX = THREE.MathUtils.radToDeg(euler.x);
+    const rotY = THREE.MathUtils.radToDeg(euler.y);
+    const rotZ = THREE.MathUtils.radToDeg(euler.z);
+    if (rotX === 0 && rotY === 0 && rotZ === 0) {
+      entity.removeAttribute('rotation');
+    } else {
+      entity.setAttribute('rotation', { x: rotX, y: rotY, z: rotZ });
+    }
 
-    entity.setAttribute('scale', {
-      x: newLocalScale.x,
-      y: newLocalScale.y,
-      z: newLocalScale.z
-    });
+    if (
+      newLocalScale.x === 1 &&
+      newLocalScale.y === 1 &&
+      newLocalScale.z === 1
+    ) {
+      entity.removeAttribute('scale');
+    } else {
+      entity.setAttribute('scale', {
+        x: newLocalScale.x,
+        y: newLocalScale.y,
+        z: newLocalScale.z
+      });
+    }
   }
 
   execute(nextCommandCallback) {
