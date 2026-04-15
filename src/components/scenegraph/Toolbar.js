@@ -92,12 +92,8 @@ export default class Toolbar extends React.Component {
       if (!definition) return;
 
       const selected = AFRAME.INSPECTOR.selectedEntity;
-      const defaultParent = AFRAME.INSPECTOR.config.defaultParent.replace(
-        /^#/,
-        ''
-      );
-      if (selected && selected.id !== defaultParent && selected.parentElement) {
-        definition.parentEl = selected.parentElement;
+      if (selected) {
+        definition.parentEl = selected.id || selected;
       }
 
       AFRAME.INSPECTOR.execute('entitycreate', definition);
