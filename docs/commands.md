@@ -102,6 +102,26 @@ AFRAME.INSPECTOR.execute('entityupdate', {
 
 When executed or undone, this emits an `entityupdate` event with `{entity, component, property, value}`.
 
+### entityreparent
+
+Usage:
+
+```js
+AFRAME.INSPECTOR.execute('entityreparent', {
+  entity: entity,
+  parentEl: 'newParentId',
+  indexInParent: 0
+});
+```
+
+- `entity`: the entity to reparent.
+- `parentEl`: the id of the new parent element.
+- `indexInParent`: the index at which to insert the entity among the new parent's children. If omitted or out of range, the entity is appended.
+
+The entity's world position, rotation, and scale are preserved — its local transform is recalculated relative to the new parent.
+
+When executed or undone, this emits an `entityremoved` event with the old entity and an `entitycreated` event with the recreated entity.
+
 ### entityremove
 
 Usage:
@@ -223,6 +243,15 @@ type ComponentRemoveCommand = [
 
 type EntityCreateCommand = ["entitycreate", EntityObject] | ["entitycreate", EntityObject, (el: Entity) => void];
 
+type EntityReparentCommand = [
+  "entityreparent",
+  {
+    entity: Entity;
+    parentEl: string;
+    indexInParent?: number;
+  },
+];
+
 type EntityRemoveCommand = ["entityremove", Entity];
 
 type EntityUpdateCommand = [
@@ -240,6 +269,7 @@ type CommandsForMulti = (
   | ComponentRemoveCommand
   | EntityCreateCommand
   | EntityRemoveCommand
+  | EntityReparentCommand
   | EntityUpdateCommand
 )[];
 ```
