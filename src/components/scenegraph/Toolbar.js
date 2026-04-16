@@ -121,6 +121,7 @@ export default class Toolbar extends React.Component {
     if (this.state.isPlaying) {
       AFRAME.scenes[0].pause();
       this.setState({ isPlaying: false });
+      Events.emit('sceneplayingtoggle', false);
       AFRAME.scenes[0].isPlaying = true;
       document.getElementById('aframeInspectorMouseCursor').play();
       return;
@@ -128,6 +129,7 @@ export default class Toolbar extends React.Component {
     AFRAME.scenes[0].isPlaying = false;
     AFRAME.scenes[0].play();
     this.setState({ isPlaying: true });
+    Events.emit('sceneplayingtoggle', true);
   };
 
   openHelpModal = () => {
