@@ -143,14 +143,14 @@ export class EntityReparentCommand extends Command {
       newParent.appendChild(recreatedEntity);
     }
 
+    // Update position/rotation/scale components relative to new parent
+    this.updateLocalTransform(recreatedEntity, newParent);
+
     // Wait for entity to be loaded before emitting events
     recreatedEntity.addEventListener(
       'loaded',
       () => {
         recreatedEntity.pause();
-
-        // Calculate new local position and quaternion relative to new parent
-        this.updateLocalTransform(recreatedEntity, newParent);
 
         Events.emit('entityremoved', entity);
         Events.emit('entitycreated', recreatedEntity);
@@ -202,14 +202,14 @@ export class EntityReparentCommand extends Command {
       oldParent.appendChild(recreatedEntity);
     }
 
+    // Update position/rotation/scale components relative to old parent
+    this.updateLocalTransform(recreatedEntity, oldParent);
+
     // Wait for entity to be loaded before emitting events
     recreatedEntity.addEventListener(
       'loaded',
       () => {
         recreatedEntity.pause();
-
-        // For undo, restore the original local transform relative to old parent
-        this.updateLocalTransform(recreatedEntity, oldParent);
 
         Events.emit('entityremoved', entity);
         Events.emit('entitycreated', recreatedEntity);
