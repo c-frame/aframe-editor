@@ -45,13 +45,22 @@ export class EntityUpdateCommand extends Command {
     if (component) {
       if (payload.property) {
         if (component.schema[payload.property]) {
+          const schemaProperty = component.schema[payload.property];
+          const isSelectorType =
+            schemaProperty.type === 'selector' ||
+            schemaProperty.type === 'selectorAll';
           this.newValue =
             payload.value === null
               ? null
-              : component.schema[payload.property].stringify(payload.value);
-          this.oldValue = component.schema[payload.property].stringify(
-            entity.getAttribute(payload.component)[payload.property]
-          );
+              : isSelectorType
+                ? payload.value
+                : schemaProperty.stringify(payload.value);
+          this.oldValue = isSelectorType
+            ? (entity.getDOMAttribute(payload.component)?.[payload.property] ??
+              '')
+            : schemaProperty.stringify(
+                entity.getAttribute(payload.component)[payload.property]
+              );
         } else {
           // Just in case dynamic schema is not properly updated and we set an unknown property. I don't think this should happen.
           this.newValue = payload.value;
