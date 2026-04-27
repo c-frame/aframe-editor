@@ -114,17 +114,123 @@ export function cloneEntity(entity) {
   return AFRAME.INSPECTOR.execute('entityclone', entity);
 }
 
-function recursivelyRegenerateId(element) {
-  if (element.id) {
+function recursivelyRegenerateId(element, idMap) {
+  const oldId = element.id;
+  if (oldId) {
     // if it's a nanoid, create a new one, otherwise use getUniqueId
-    element.id =
-      element.id.length === 21 ? createUniqueId() : getUniqueId(element.id);
+    element.id = oldId.length === 21 ? createUniqueId() : getUniqueId(oldId);
+    if (idMap) idMap[oldId] = element.id;
   } else {
     element.id = createUniqueId();
   }
 
-  for (const child of element.childNodes) {
-    recursivelyRegenerateId(child);
+  for (const child of element.children) {
+    recursivelyRegenerateId(child, idMap);
+  }
+}
+
+/**
+ * Remap a single selector string (e.g. "#oldId") using the idMap, leaving
+ * non-id selectors (".foo", "[bar]") untouched.
+ */
+function remapSingleSelector(selector, idMap) {
+  if (typeof selector !== 'string') return selector;
+  const trimmed = selector.trim();
+  if (trimmed.startsWith('#')) {
+    const id = trimmed.slice(1);
+    if (idMap[id]) {
+      return '#' + idMap[id];
+    }
+  }
+  return selector;
+}
+
+function remapSelectorString(value, type, idMap) {
+  if (typeof value !== 'string' || value === '') return value;
+  if (type === 'selectorAll') {
+    return value
+      .split(',')
+      .map((s) => remapSingleSelector(s.trim(), idMap))
+      .join(', ');
+  }
+  return remapSingleSelector(value, idMap);
+}
+
+/**
+ * Given a component attribute value (string), remap any selector/selectorAll
+ * properties whose value references an old ID present in `idMap`.
+ */
+function remapSelectorReferencesInValue(componentName, value, idMap) {
+  if (!value || typeof value !== 'string') return value;
+
+  // Multi-instance components like raycaster__primary use the base name
+  // for schema lookup.
+  const baseName = componentName.split('__')[0];
+  const aframeComponent = AFRAME.components[baseName];
+  if (!aframeComponent) return value;
+
+  const schema = aframeComponent.schema;
+
+  if (isSingleProperty(schema)) {
+    if (schema.type === 'selector' || schema.type === 'selectorAll') {
+      return remapSelectorString(value, schema.type, idMap);
+    }
+    return value;
+  }
+
+  const selectorProps = [];
+  for (const propName in schema) {
+    const propType = schema[propName].type;
+    if (propType === 'selector' || propType === 'selectorAll') {
+      selectorProps.push({ name: propName, type: propType });
+    }
+  }
+  if (selectorProps.length === 0) return value;
+
+  const parsed = AFRAME.utils.styleParser.parse(value);
+  // styleParser returns the original string if it can't parse it as key:value pairs
+  if (typeof parsed !== 'object' || parsed === null) return value;
+  let modified = false;
+  for (const { name, type } of selectorProps) {
+    if (parsed[name] !== undefined && parsed[name] !== '') {
+      const newValue = remapSelectorString(parsed[name], type, idMap);
+      if (newValue !== parsed[name]) {
+        parsed[name] = newValue;
+        modified = true;
+      }
+    }
+  }
+  if (!modified) return value;
+  return AFRAME.utils.styleParser.stringify(parsed);
+}
+
+/**
+ * Walk a (detached) DOM subtree and remap selector/selectorAll attribute
+ * values so that references to the original entities point to their copies.
+ * Used after cloning a group of entities so intra-group references survive.
+ */
+function remapSelectorReferences(element, idMap) {
+  if (!idMap || Object.keys(idMap).length === 0) return;
+  if (!element.attributes) return;
+  // Use native setAttribute: AEntity.setAttribute updates internal component
+  // state but does not write to the DOM attribute, so cloneNode(true) on the
+  // detached clone would copy the old value.
+  const setAttribute = HTMLElement.prototype.setAttribute;
+  for (const attr of [...element.attributes]) {
+    if (NOT_COMPONENTS.includes(attr.name) || attr.name.startsWith('data-')) {
+      continue;
+    }
+    const newValue = remapSelectorReferencesInValue(
+      attr.name,
+      attr.value,
+      idMap
+    );
+    if (newValue !== attr.value) {
+      setAttribute.call(element, attr.name, newValue);
+    }
+  }
+  for (const child of element.children) {
+    remapSelectorReferences(child, idMap);
   }
 }
 
@@ -136,7 +242,9 @@ function recursivelyRegenerateId(element) {
 export function cloneEntityImpl(entity) {
   entity.flushToDOM();
   const clone = prepareForSerialization(entity);
-  recursivelyRegenerateId(clone);
+  const idMap = {};
+  recursivelyRegenerateId(clone, idMap);
+  remapSelectorReferences(clone, idMap);
   return clone;
 }
 
@@ -826,6 +934,23 @@ export function parseEntityHTML(html) {
   const rootId = element.getAttribute('id');
   const needsRegenerate = rootId ? !!document.getElementById(rootId) : true;
 
+  // First pass: build idMap from old IDs to new (regenerated) IDs so we can
+  // remap intra-group selector references in the second pass.
+  const idMap = {};
+  if (needsRegenerate) {
+    function buildIdMap(el) {
+      const originalId = el.getAttribute('id');
+      if (originalId) {
+        idMap[originalId] =
+          originalId.length === 21 ? createUniqueId() : getUniqueId(originalId);
+      }
+      for (const child of el.children) {
+        buildIdMap(child);
+      }
+    }
+    buildIdMap(element);
+  }
+
   function parseElement(el) {
     const def = {};
 
@@ -835,13 +960,7 @@ export function parseEntityHTML(html) {
 
     const originalId = el.getAttribute('id');
     if (needsRegenerate) {
-      // Regenerate ID using same logic as recursivelyRegenerateId
-      if (originalId) {
-        def.id =
-          originalId.length === 21 ? createUniqueId() : getUniqueId(originalId);
-      } else {
-        def.id = createUniqueId();
-      }
+      def.id = originalId ? idMap[originalId] : createUniqueId();
     } else if (originalId) {
       def.id = originalId;
     }
@@ -853,7 +972,11 @@ export function parseEntityHTML(html) {
         def[attr.name] = attr.value;
         continue;
       }
-      components[attr.name] = attr.value;
+      components[attr.name] = remapSelectorReferencesInValue(
+        attr.name,
+        attr.value,
+        idMap
+      );
     }
     if (Object.keys(components).length > 0) {
       def.components = components;
