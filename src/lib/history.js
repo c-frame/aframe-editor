@@ -142,7 +142,7 @@ export class History {
 
     for (let i = 0; i < json.redos.length; i++) {
       const cmdJSON = json.redos[i];
-      const cmd = new commandsByType.get[cmdJSON.type](this.editor); // creates a new object of type "json.type"
+      const cmd = new commandsByType.get(cmdJSON.type)(this.editor); // creates a new object of type "json.type"
       cmd.json = cmdJSON;
       cmd.id = cmdJSON.id;
       cmd.name = cmdJSON.name;
