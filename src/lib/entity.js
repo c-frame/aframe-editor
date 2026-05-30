@@ -267,8 +267,6 @@ export function getEntityClipboardRepresentation(entity) {
   var clone = prepareForSerialization(entity);
   var html = clone.outerHTML;
   html = html.replaceAll('=""', '');
-  // Remove generated nanoid
-  html = html.replaceAll(/ id="[A-Za-z0-9_-]{21}"/g, '');
   if (html.startsWith('<a-scene')) {
     html = '    ' + html;
   }
