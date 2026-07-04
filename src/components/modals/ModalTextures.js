@@ -4,12 +4,7 @@ import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { AwesomeIcon } from '../AwesomeIcon';
 import Events from '../../lib/Events';
 import Modal from './Modal';
-import {
-  getFilename,
-  getIdFromUrl,
-  insertNewAsset,
-  isValidId
-} from '../../lib/assetsUtils';
+import { getFilename, getIdFromUrl, isValidId } from '../../lib/assetsUtils';
 
 export default class ModalTextures extends React.Component {
   static propTypes = {
@@ -201,14 +196,27 @@ export default class ModalTextures extends React.Component {
       return;
     }
 
-    insertNewAsset(
-      'img',
-      this.state.preview.name,
-      this.state.preview.src,
-      () => {
-        this.generateFromAssets();
-        this.setState({ addNewDialogOpened: false });
-        this.clear();
+    AFRAME.INSPECTOR.execute(
+      'assetcreate',
+      {
+        tagName: 'img',
+        id: this.state.preview.name,
+        attributes: {
+          src: this.state.preview.src,
+          crossorigin: 'anonymous'
+        }
+      },
+      undefined,
+      (img) => {
+        img.addEventListener(
+          'load',
+          () => {
+            this.generateFromAssets();
+            this.setState({ addNewDialogOpened: false });
+            this.clear();
+          },
+          { once: true }
+        );
       }
     );
   };

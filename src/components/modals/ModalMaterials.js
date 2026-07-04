@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 import React from 'react';
 import PropTypes from 'prop-types';
+import Events from '../../lib/Events';
 import Modal from './Modal';
 import BooleanWidget from '../widgets/BooleanWidget';
 import ColorWidget from '../widgets/ColorWidget';
@@ -45,16 +46,40 @@ export default class ModalMaterials extends React.Component {
   componentDidMount() {
     // Textures load asynchronously; refresh swatches and widgets when they do.
     document.addEventListener('materialtextureloaded', this.onTextureLoaded);
+    Events.on('assetcreate', this.onAssetCreate);
+    Events.on('assetremove', this.onMaterialAssetsChanged);
+    // Refresh on undo/redo of material asset updates.
+    Events.on('assetupdate', this.onMaterialAssetsChanged);
   }
 
   componentWillUnmount() {
     document.removeEventListener('materialtextureloaded', this.onTextureLoaded);
+    Events.off('assetcreate', this.onAssetCreate);
+    Events.off('assetremove', this.onMaterialAssetsChanged);
+    Events.off('assetupdate', this.onMaterialAssetsChanged);
   }
 
   onTextureLoaded = () => {
     if (this.state.isOpen) {
       this.forceUpdate();
     }
+  };
+
+  onAssetCreate = (assetEl) => {
+    if (!assetEl.isMaterialAsset) return;
+    this.setState({
+      materials: Array.from(document.querySelectorAll('a-material')),
+      selectedEl: assetEl
+    });
+  };
+
+  onMaterialAssetsChanged = () => {
+    const materials = Array.from(document.querySelectorAll('a-material'));
+    const selectedEl =
+      this.state.selectedEl && materials.includes(this.state.selectedEl)
+        ? this.state.selectedEl
+        : materials[0] || null;
+    this.setState({ materials, selectedEl });
   };
 
   componentDidUpdate(prevProps) {
@@ -93,23 +118,9 @@ export default class ModalMaterials extends React.Component {
   };
 
   createMaterial = () => {
-    let n = 1;
-    while (document.getElementById('material-' + n)) {
-      n++;
-    }
-    const el = document.createElement('a-material');
-    el.id = 'material-' + n;
-    const sceneEl = AFRAME.scenes[0];
-    let assetsEl = sceneEl.querySelector('a-assets');
-    if (!assetsEl) {
-      assetsEl = document.createElement('a-assets');
-      sceneEl.appendChild(assetsEl);
-    }
-    assetsEl.appendChild(el);
-    this.setState({
-      materials: Array.from(document.querySelectorAll('a-material')),
-      selectedEl: el
-    });
+    // Selection of the new material happens via the assetcreate event,
+    // so redo also reselects it.
+    AFRAME.INSPECTOR.execute('assetcreate', { tagName: 'a-material' });
   };
 
   updateProperty = (name, value) => {
@@ -123,11 +134,11 @@ export default class ModalMaterials extends React.Component {
     } else {
       stringValue = String(value);
     }
-    el.setAttribute(name, stringValue);
-    // Attribute changes are picked up by a MutationObserver (asynchronous);
-    // apply synchronously so swatches and dependent widgets refresh right away.
-    el.attributeChangedCallback(name.toLowerCase(), null, stringValue);
-    this.forceUpdate();
+    AFRAME.INSPECTOR.execute('assetupdate', {
+      assetEl: el,
+      attribute: name,
+      value: stringValue
+    });
   };
 
   getMaterialTitle(el) {

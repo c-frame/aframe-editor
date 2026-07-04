@@ -44,35 +44,3 @@ export function getValidId(name) {
       .toLowerCase()
   );
 }
-
-export function insertNewAsset(type, id, src, onLoadedCallback = undefined) {
-  let element;
-  switch (type) {
-    case 'img':
-      element = document.createElement('img');
-      element.id = id;
-      element.src = src;
-      element.crossOrigin = 'anonymous';
-      break;
-  }
-
-  if (element) {
-    element.onload = function () {
-      if (onLoadedCallback) {
-        onLoadedCallback();
-      }
-    };
-
-    let assetsEl = document.querySelector('a-assets');
-    if (!assetsEl) {
-      assetsEl = document.createElement('a-assets');
-      var sceneEl = document.querySelector('a-scene');
-      if (!sceneEl) {
-        throw new Error('No a-scene element found to append a-assets to');
-      }
-      sceneEl.appendChild(assetsEl);
-    }
-
-    assetsEl.appendChild(element);
-  }
-}

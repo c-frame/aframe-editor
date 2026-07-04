@@ -31,6 +31,14 @@ export default class MaterialWidget extends React.Component {
 
   componentDidMount() {
     this.paintSwatch();
+    // Repaint when the referenced material asset is edited (including undo/redo).
+    Events.on('assetupdate', this.paintSwatch);
+    document.addEventListener('materialtextureloaded', this.paintSwatch);
+  }
+
+  componentWillUnmount() {
+    Events.off('assetupdate', this.paintSwatch);
+    document.removeEventListener('materialtextureloaded', this.paintSwatch);
   }
 
   componentDidUpdate(prevProps) {
