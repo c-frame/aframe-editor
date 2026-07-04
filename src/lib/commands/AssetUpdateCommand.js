@@ -51,6 +51,10 @@ export class AssetUpdateCommand extends Command {
   }
 
   apply(value, nextCommandCallback) {
+    if (this.property === 'id') {
+      this.applyId(value, nextCommandCallback);
+      return;
+    }
     const assetEl = this.resolveAssetEl();
     if (!assetEl) return;
     if (value === null || value === undefined) {
@@ -71,6 +75,41 @@ export class AssetUpdateCommand extends Command {
     Events.emit('assetupdate', {
       assetEl,
       attribute: this.property,
+      value
+    });
+    nextCommandCallback?.(assetEl);
+  }
+
+  /**
+   * Rename the asset. The command's own entityId follows the rename so
+   * undo/redo keep resolving the element, and entities already referencing
+   * the applied id are re-resolved (undo reverts the consumers before the id
+   * itself is restored).
+   */
+  applyId(value, nextCommandCallback) {
+    const currentId = value === this.newValue ? this.oldValue : this.newValue;
+    const assetEl =
+      document.getElementById(currentId) ||
+      (this.assetEl && this.assetEl.isConnected ? this.assetEl : null);
+    if (!assetEl) return;
+    assetEl.id = value;
+    if (assetEl.isMaterialAsset && assetEl.material) {
+      assetEl.material.name = value;
+    }
+    this.assetEl = assetEl;
+    this.entityId = value;
+    const ref = '#' + value;
+    document.querySelectorAll('a-scene [material]').forEach((entity) => {
+      if (
+        entity.isEntity &&
+        entity.getDOMAttribute('material')?.material === ref
+      ) {
+        entity.setAttribute('material', 'material', ref);
+      }
+    });
+    Events.emit('assetupdate', {
+      assetEl,
+      attribute: 'id',
       value
     });
     nextCommandCallback?.(assetEl);

@@ -2,6 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Events from '../../lib/Events';
+import { createUniqueId } from '../../lib/entity';
 import Modal from './Modal';
 import BooleanWidget from '../widgets/BooleanWidget';
 import ColorWidget from '../widgets/ColorWidget';
@@ -147,6 +148,55 @@ export default class ModalMaterials extends React.Component {
     AFRAME.INSPECTOR.execute('assetremove', { assetEl: el });
   };
 
+  renameMaterial = (newIdRaw) => {
+    const el = this.state.selectedEl;
+    if (!el || !el.id) return;
+    const newId = newIdRaw.trim();
+    const oldId = el.id;
+    if (!newId || newId === oldId) {
+      this.forceUpdate();
+      return;
+    }
+    if (!/^[A-Za-z][\w-]*$/.test(newId) || document.getElementById(newId)) {
+      alert('Invalid or already used id: ' + newId);
+      this.forceUpdate();
+      return;
+    }
+    // Rename the asset and update every entity referencing it, as one
+    // undoable step. The rename runs first; its undo (last) re-resolves the
+    // reverted consumer references. Elements are referenced by id string so
+    // the multi command payload stays serializable.
+    const ref = '#' + oldId;
+    const commands = [
+      ['assetupdate', { assetEl: oldId, attribute: 'id', value: newId }]
+    ];
+    document.querySelectorAll('a-scene [material]').forEach((entity) => {
+      if (
+        entity.isEntity &&
+        entity.getDOMAttribute('material')?.material === ref
+      ) {
+        if (!entity.id) {
+          entity.id = createUniqueId();
+        }
+        commands.push([
+          'entityupdate',
+          {
+            entity: entity.id,
+            component: 'material',
+            property: 'material',
+            value: '#' + newId
+          }
+        ]);
+      }
+    });
+    if (commands.length === 1) {
+      AFRAME.INSPECTOR.execute('assetupdate', commands[0][1]);
+    } else {
+      AFRAME.INSPECTOR.execute('multi', commands);
+    }
+    this.onMaterialAssetsChanged();
+  };
+
   updateProperty = (name, value) => {
     const el = this.state.selectedEl;
     const propDef = el.schema[name];
@@ -288,7 +338,29 @@ export default class ModalMaterials extends React.Component {
     const el = this.state.selectedEl;
     if (!el || !el.schema) return null;
     const keys = Object.keys(el.schema).sort();
-    return keys.map((key) => this.renderPropertyRow(el, key));
+    return (
+      <>
+        {el.id && (
+          <div className="propertyRow" key="__id">
+            <label
+              htmlFor="materialasset:id"
+              className="text"
+              title="Rename the material asset id; entities referencing it are updated"
+            >
+              id
+            </label>
+            <InputWidget
+              id="materialasset:id"
+              key={el.id}
+              name="id"
+              onBlur={(name, value) => this.renameMaterial(String(value))}
+              value={el.id}
+            />
+          </div>
+        )}
+        {keys.map((key) => this.renderPropertyRow(el, key))}
+      </>
+    );
   }
 
   render() {

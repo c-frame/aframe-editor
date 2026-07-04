@@ -183,6 +183,15 @@ AFRAME.INSPECTOR.execute('assetupdate', {
 
 When executed or undone, this emits an `assetupdate` event with `{assetEl, attribute, value}`.
 
+Renaming an asset id is supported with `attribute: 'id'`: the command keeps resolving the element across undo/redo, and entities already referencing the applied id are re-resolved. To also update the entities referencing the asset, combine it with `entityupdate` commands in a `multi` command, referencing elements by id string so the payload stays serializable (the rename must be first; its undo runs last and re-resolves the reverted consumer references):
+
+```js
+AFRAME.INSPECTOR.execute('multi', [
+  ['assetupdate', { assetEl: 'wood', attribute: 'id', value: 'oak' }],
+  ['entityupdate', { entity: 'box1', component: 'material', property: 'material', value: '#oak' }]
+]);
+```
+
 ### assetremove
 
 Remove an asset element from `<a-assets>`. The tag name, attributes and position are captured so undo recreates the asset in place. For `<a-material>`, entities referencing the asset are re-resolved on undo so they use the recreated `THREE.Material` instance.
