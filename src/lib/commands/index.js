@@ -1,4 +1,5 @@
 import { AssetCreateCommand } from './AssetCreateCommand.js';
+import { AssetRemoveCommand } from './AssetRemoveCommand.js';
 import { AssetUpdateCommand } from './AssetUpdateCommand.js';
 import { ComponentAddCommand } from './ComponentAddCommand.js';
 import { ComponentRemoveCommand } from './ComponentRemoveCommand.js';
@@ -17,6 +18,7 @@ commandsByType.set('entitycreate', EntityCreateCommand);
 commandsByType.set('entityremove', EntityRemoveCommand);
 commandsByType.set('entityreparent', EntityReparentCommand);
 commandsByType.set('assetcreate', AssetCreateCommand);
+commandsByType.set('assetremove', AssetRemoveCommand);
 commandsByType.set('assetupdate', AssetUpdateCommand);
 commandsByType.set('entityupdate', EntityUpdateCommand);
 commandsByType.set('multi', MultiCommand);
