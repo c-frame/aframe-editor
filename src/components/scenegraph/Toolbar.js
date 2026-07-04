@@ -107,10 +107,11 @@ export default class Toolbar extends React.Component {
    */
   // writeChanges = () => {
   //   const xhr = new XMLHttpRequest();
-  //   xhr.open('POST', 'http://localhost:51234/save');
+  //   const watcherUrl = window.AFRAME.INSPECTOR.config.saveEndpoint;
+  //   xhr.open('POST', watcherUrl);
   //   xhr.onerror = () => {
   //     alert(
-  //       'aframe-watcher not running. This feature requires a companion service running locally. npm install aframe-watcher to save changes back to file. Read more at https://github.com/supermedium/aframe-watcher'
+  //       `aframe-watcher not running at ${watcherUrl}. This feature requires a companion service running locally. npm install aframe-watcher to save changes back to file. Read more at https://github.com/supermedium/aframe-watcher`
   //     );
   //   };
   //   xhr.setRequestHeader('Content-Type', 'application/json');
