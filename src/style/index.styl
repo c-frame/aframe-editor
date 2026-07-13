@@ -12,6 +12,11 @@ body.aframe-inspector-opened
   margin 0
   overflow hidden
 
+  a-scene .a-canvas
+    // mousedown default action is no longer prevented (see raycaster.js), so
+    // block drag-started text selection from anchoring on the canvas
+    user-select none
+
 /* :where(:root) has zero specificity compared to :root, so any user defined :root will override the below rule */
 :where(:root) {
   color-scheme: dark;
@@ -301,9 +306,6 @@ body.aframe-inspector-opened
   .hide
     display none
 
-  .a-canvas.state-dragging
-    cursor grabbing
-
   #rightPanel
     align-items stretch
     display flex
@@ -324,10 +326,6 @@ body.aframe-inspector-opened
   #viewportBar,
   #rightPanel
     pointer-events all
-
-  .aframe-inspector-opened a-scene .a-canvas
-    background-color #191919
-    z-index 9998
 
   .toggle-sidebar
     align-items center
