@@ -1,15 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { AwesomeIcon } from '../AwesomeIcon';
 import Events from '../../lib/Events';
 import Modal from './Modal';
-import {
-  getFilename,
-  getIdFromUrl,
-  insertNewAsset,
-  isValidId
-} from '../../lib/assetsUtils';
+import { getFilename, getIdFromUrl, isValidId } from '../../lib/assetsUtils';
 
 export default class ModalTextures extends React.Component {
   static propTypes = {
@@ -201,20 +196,42 @@ export default class ModalTextures extends React.Component {
       return;
     }
 
-    insertNewAsset(
-      'img',
-      this.state.preview.name,
-      this.state.preview.src,
-      () => {
-        this.generateFromAssets();
-        this.setState({ addNewDialogOpened: false });
-        this.clear();
+    AFRAME.INSPECTOR.execute(
+      'assetcreate',
+      {
+        tagName: 'img',
+        id: this.state.preview.name,
+        attributes: {
+          src: this.state.preview.src,
+          crossorigin: 'anonymous'
+        }
+      },
+      undefined,
+      (img) => {
+        img.addEventListener(
+          'load',
+          () => {
+            this.generateFromAssets();
+            this.setState({ addNewDialogOpened: false });
+            this.clear();
+          },
+          { once: true }
+        );
       }
     );
   };
 
   onChangeFilter = (e) => {
     this.setState({ filterText: e.target.value });
+  };
+
+  deleteAsset = (image, event) => {
+    event.stopPropagation();
+    if (!confirm('Do you really want to remove asset `#' + image.id + '`?')) {
+      return;
+    }
+    AFRAME.INSPECTOR.execute('assetremove', { assetEl: image.id });
+    this.generateFromAssets();
   };
 
   renderRegistryImages() {
@@ -411,6 +428,13 @@ export default class ModalTextures extends React.Component {
                         <span>
                           {image.width} x {image.height}
                         </span>
+                        <a
+                          className="button delete-asset"
+                          title="Remove asset"
+                          onClick={this.deleteAsset.bind(this, image)}
+                        >
+                          <AwesomeIcon icon={faTrashAlt} />
+                        </a>
                       </div>
                     </li>
                   );

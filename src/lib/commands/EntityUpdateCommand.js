@@ -46,9 +46,13 @@ export class EntityUpdateCommand extends Command {
       if (payload.property) {
         if (component.schema[payload.property]) {
           const schemaProperty = component.schema[payload.property];
+          // The material type is edited as a raw reference string
+          // (`#myMaterial` or an inline `material(...)` definition), like
+          // selector types.
           const isSelectorType =
             schemaProperty.type === 'selector' ||
-            schemaProperty.type === 'selectorAll';
+            schemaProperty.type === 'selectorAll' ||
+            schemaProperty.type === 'material';
           this.newValue =
             payload.value === null
               ? null

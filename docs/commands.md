@@ -133,6 +133,80 @@ AFRAME.INSPECTOR.execute('entityremove', entity);
 When executed, this emits an `entityremoved` event with `entity`.
 When undone, this emits an `entitycreated` event with `entity`.
 
+### assetcreate
+
+Create an asset element in `<a-assets>` (e.g. `a-material`, `a-mixin`, `img`, `audio`, `video`, `a-asset-item`).
+
+Usage:
+
+```js
+AFRAME.INSPECTOR.execute('assetcreate', {
+  tagName: 'a-material'
+});
+```
+
+or with an explicit id, attributes and a callback receiving the created element:
+
+```js
+AFRAME.INSPECTOR.execute(
+  'assetcreate',
+  {
+    tagName: 'img',
+    id: 'wood',
+    attributes: { src: 'wood.png', crossorigin: 'anonymous' }
+  },
+  undefined,
+  (img) => { console.log('created', img); }
+);
+```
+
+- `tagName`: element tag to create.
+- `id`: optional; a unique `<base>-N` id is generated otherwise (e.g. `material-1` for `a-material`). The id stays stable across undo/redo so later commands referencing the asset keep working.
+- `attributes`: optional object of attribute name to string value.
+
+When executed, this emits an `assetcreate` event with the created element.
+When undone, this emits an `assetremove` event with the asset id.
+
+### assetupdate
+
+Update an attribute of an asset element. Consecutive updates to the same asset attribute are merged in history like entity updates.
+
+Usage:
+
+```js
+AFRAME.INSPECTOR.execute('assetupdate', {
+  assetEl: materialEl, // element or id string
+  attribute: 'color',
+  value: 'green' // attribute string, or null to remove the attribute
+});
+```
+
+When executed or undone, this emits an `assetupdate` event with `{assetEl, attribute, value}`.
+
+Renaming an asset id is supported with `attribute: 'id'`: the command keeps resolving the element across undo/redo, and entities already referencing the applied id are re-resolved. To also update the entities referencing the asset, combine it with `entityupdate` commands in a `multi` command, referencing elements by id string so the payload stays serializable (the rename must be first; its undo runs last and re-resolves the reverted consumer references):
+
+```js
+AFRAME.INSPECTOR.execute('multi', [
+  ['assetupdate', { assetEl: 'wood', attribute: 'id', value: 'oak' }],
+  ['entityupdate', { entity: 'box1', component: 'material', property: 'material', value: '#oak' }]
+]);
+```
+
+### assetremove
+
+Remove an asset element from `<a-assets>`. The tag name, attributes and position are captured so undo recreates the asset in place. For `<a-material>`, entities referencing the asset are re-resolved on undo so they use the recreated `THREE.Material` instance.
+
+Usage:
+
+```js
+AFRAME.INSPECTOR.execute('assetremove', {
+  assetEl: materialEl // element or id string
+});
+```
+
+When executed, this emits an `assetremove` event with the asset id.
+When undone, this emits an `assetcreate` event with the recreated element.
+
 ### multi
 
 Create two entities in a row:
@@ -264,7 +338,35 @@ type EntityUpdateCommand = [
   },
 ];
 
+type AssetCreatePayload = {
+  tagName: string;
+  id?: string;
+  attributes?: Record<string, string>;
+};
+type AssetCreateCommand =
+  | ["assetcreate", AssetCreatePayload]
+  | ["assetcreate", AssetCreatePayload, (el: Element) => void];
+
+type AssetUpdateCommand = [
+  "assetupdate",
+  {
+    assetEl: Element | string;
+    attribute: string;
+    value: string | null;
+  },
+];
+
+type AssetRemoveCommand = [
+  "assetremove",
+  {
+    assetEl: Element | string;
+  },
+];
+
 type CommandsForMulti = (
+  | AssetCreateCommand
+  | AssetRemoveCommand
+  | AssetUpdateCommand
   | ComponentAddCommand
   | ComponentRemoveCommand
   | EntityCreateCommand

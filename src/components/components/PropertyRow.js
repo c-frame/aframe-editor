@@ -9,6 +9,7 @@ import CopyToClipboardButton from '../CopyToClipboardButton';
 import BooleanWidget from '../widgets/BooleanWidget';
 import ColorWidget from '../widgets/ColorWidget';
 import InputWidget from '../widgets/InputWidget';
+import MaterialWidget from '../widgets/MaterialWidget';
 import NumberWidget from '../widgets/NumberWidget';
 import SelectWidget from '../widgets/SelectWidget';
 import TextureWidget from '../widgets/TextureWidget';
@@ -68,7 +69,12 @@ export default class PropertyRow extends React.Component {
   getWidget() {
     const props = this.props;
     const type = this.getType();
-    const isSelectorType = type === 'selector' || type === 'selectorAll';
+    // The material type behaves like a selector (`#myMaterial` or an inline
+    // `material(...)` definition): edit the raw string and commit on blur so
+    // partial selectors typed by the user are not committed keystroke by
+    // keystroke (which would detach the entity from its shared material).
+    const isSelectorType =
+      type === 'selector' || type === 'selectorAll' || type === 'material';
 
     const value = isSelectorType
       ? props.entity.getDOMAttribute(props.componentname)?.[props.name]
@@ -110,6 +116,10 @@ export default class PropertyRow extends React.Component {
     }
     if (type === 'map') {
       return <TextureWidget {...widgetProps} />;
+    }
+    if (type === 'material') {
+      // widgetProps contains onBlur (material is a selector-like type).
+      return <MaterialWidget {...widgetProps} />;
     }
 
     switch (type) {
